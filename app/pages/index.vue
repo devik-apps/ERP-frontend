@@ -1,5 +1,5 @@
 <template>
   <div>
-    <!-- sections ERP à venir : dashboard, catalog, product, stock -->
+    <ErpDashboard />
   </div>
 </template>
