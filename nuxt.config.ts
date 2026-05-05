@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   modules: [
     'shadcn-nuxt',
     '@serwist/nuxt',
+    ...(process.env.VITEST ? ['@nuxt/test-utils/module'] : []),
   ],
 
   css: ['./app/assets/css/main.css'],
