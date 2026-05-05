@@ -17,16 +17,16 @@ test.describe('Dashboard', () => {
   })
 
   test('affiche les 11 mouvements récents', async ({ page }) => {
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(11)
+    await expect(page.locator('.tbl').first().locator('tbody tr')).toHaveCount(11)
   })
 
   test('le filtre Entrées réduit le tableau à 8 lignes', async ({ page }) => {
     await page.getByRole('button', { name: 'Entrées' }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(8)
+    await expect(page.locator('.tbl').first().locator('tbody tr')).toHaveCount(8)
   })
 
   test('le filtre Sorties réduit le tableau à 3 lignes', async ({ page }) => {
     await page.getByRole('button', { name: 'Sorties' }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(3)
+    await expect(page.locator('.tbl').first().locator('tbody tr')).toHaveCount(3)
   })
 })
