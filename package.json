@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "generate:api": "openapi-typescript docs/api.yml -o app/api/types.gen.ts",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.100.9",
