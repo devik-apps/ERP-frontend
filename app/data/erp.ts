@@ -39,6 +39,44 @@ export const PRODUCTS: Product[] = [
   { name: 'Moules de bouchot',  category: 'Coquillages',    status: 'Actif',     stock: 11.4, unit: 'kg', price: '6,50 €/kg',  origin: 'Mont-Saint-Michel' },
 ]
 
+export interface PriceRow {
+  segment: string
+  cost: string
+  price: string
+  margin: string
+}
+
+export interface ProductDetail extends Product {
+  ref: string
+  description: string
+  available: number
+  reserved: number
+  threshold: number
+  prices: PriceRow[]
+}
+
+export const PRODUCT_DETAIL: ProductDetail = {
+  name: 'Thon rouge entier',
+  category: 'Poissons frais',
+  status: 'Actif',
+  stock: 32.4,
+  unit: 'kg',
+  price: '38,00 €/kg',
+  origin: 'Mareyeur Sète',
+  ref: 'POI-THO-001',
+  description:
+    'Thon rouge entier de Méditerranée, pêché à la palangre. Calibre 30–50 kg, livré sous glace. Idéal pour découpe sushi, tartare et longe rôtie.',
+  available: 28.4,
+  reserved: 4.0,
+  threshold: 10.0,
+  prices: [
+    { segment: 'Détail',     cost: '24,00 €/kg', price: '38,00 €/kg', margin: '37 %' },
+    { segment: 'Pro',        cost: '24,00 €/kg', price: '34,00 €/kg', margin: '29 %' },
+    { segment: 'Restaurant', cost: '24,00 €/kg', price: '32,50 €/kg', margin: '26 %' },
+    { segment: 'Gros',       cost: '24,00 €/kg', price: '29,80 €/kg', margin: '19 %' },
+  ],
+}
+
 export interface Movement {
   time: string
   product: string
