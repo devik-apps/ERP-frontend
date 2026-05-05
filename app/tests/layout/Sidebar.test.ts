@@ -51,7 +51,7 @@ describe('ErpSidebar', () => {
       props: { active: 'dashboard' },
     })
     const items = w.findAll('.sb-item:not(.is-disabled)')
-    await items[0].trigger('click')
+    await items[0]!.trigger('click')
     expect(w.emitted('navigate')).toBeTruthy()
   })
 })
