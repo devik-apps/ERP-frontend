@@ -1,7 +1,12 @@
+<script setup lang="ts">
+useHead({
+  title: 'Poissonnerie du Vieux Port — ERP',
+  htmlAttrs: { lang: 'fr' },
+})
+</script>
+
 <template>
-  <div class="min-h-screen bg-scale-50 text-scale-900">
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>

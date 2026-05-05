@@ -1,15 +1,18 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('ERP Poissonnerie', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+  })
+
   test('la page se charge sans erreur', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', e => errors.push(e.message))
-    await page.goto('/')
+    await page.waitForSelector('.app')
     expect(errors).toHaveLength(0)
   })
 
   test('le titre contient "Poissonnerie"', async ({ page }) => {
-    await page.goto('/')
     await expect(page).toHaveTitle(/Poissonnerie/)
   })
 })
