@@ -1,20 +1,72 @@
 @import "tailwindcss";
 
 @theme {
-  /* Poissonnerie — rose, bleu poisson, gris écaille */
-  --color-rose-fish: oklch(0.78 0.16 355);
-  --color-blue-fish: oklch(0.52 0.14 240);
-  --color-scale-50: oklch(0.97 0.01 240);
-  --color-scale-100: oklch(0.93 0.02 240);
-  --color-scale-200: oklch(0.86 0.03 240);
-  --color-scale-300: oklch(0.76 0.04 240);
-  --color-scale-400: oklch(0.65 0.05 240);
-  --color-scale-500: oklch(0.56 0.05 240);
-  --color-scale-600: oklch(0.47 0.04 240);
-  --color-scale-700: oklch(0.38 0.04 240);
-  --color-scale-800: oklch(0.28 0.03 240);
-  --color-scale-900: oklch(0.19 0.02 240);
+  /* Police */
+  --font-sans: 'Inter Tight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --radius: 0.5rem;
+  /* Primaire — ardoise marine */
+  --color-slate:      #4A6274;
+  --color-slate-ink:  #2F4453;
+  --color-slate-soft: #E4EBF0;
+  --color-slate-tint: #F1F4F7;
+
+  /* Secondaire — corail */
+  --color-coral:      #D4856A;
+  --color-coral-ink:  #9C5640;
+  --color-coral-soft: #F7E5DD;
+
+  /* Fonds et surfaces */
+  --color-bg:          #F4F5F6;
+  --color-surface:     #FFFFFF;
+  --color-salmon-tint: #FBF1EC;
+  --color-pearl:       #ECEEEF;
+
+  /* Encre (texte) */
+  --color-ink:   #2C2C2A;
+  --color-ink-2: #5C6066;
+  --color-ink-3: #8A8F95;
+
+  /* Bordures */
+  --color-line:        rgba(74, 98, 116, 0.18);
+  --color-line-strong: rgba(74, 98, 116, 0.32);
+
+  /* Rayons */
+  --radius:    4px;
+  --radius-lg: 6px;
+}
+
+/* Alias sans préfixe color- pour le CSS custom du layout */
+:root {
+  --slate:       var(--color-slate);
+  --slate-ink:   var(--color-slate-ink);
+  --slate-soft:  var(--color-slate-soft);
+  --slate-tint:  var(--color-slate-tint);
+  --coral:       var(--color-coral);
+  --coral-ink:   var(--color-coral-ink);
+  --coral-soft:  var(--color-coral-soft);
+  --bg:          var(--color-bg);
+  --surface:     var(--color-surface);
+  --salmon-tint: var(--color-salmon-tint);
+  --pearl:       var(--color-pearl);
+  --ink:         var(--color-ink);
+  --ink-2:       var(--color-ink-2);
+  --ink-3:       var(--color-ink-3);
+  --line:        var(--color-line);
+  --line-strong: var(--color-line-strong);
+}
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
 }
