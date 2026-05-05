@@ -14,10 +14,9 @@ test.describe('Fiche produit', () => {
   })
 
   test('affiche le résumé, le bloc stock et le tableau des prix', async ({ page }) => {
-    const sec = page.locator('#product')
-    await expect(sec.locator('.product-summary')).toBeVisible()
-    await expect(sec.locator('.product-stock-card')).toBeVisible()
-    await expect(sec.locator('.product-prices table')).toBeVisible()
+    await expect(page.locator('.product-summary')).toBeVisible()
+    await expect(page.locator('.product-stock-card')).toBeVisible()
+    await expect(page.locator('.product-prices table')).toBeVisible()
   })
 
   test('le bloc stock affiche 4 items', async ({ page }) => {

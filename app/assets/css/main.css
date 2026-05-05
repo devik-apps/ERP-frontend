@@ -645,6 +645,145 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 13px;
 }
 
+/* ── Fiche produit ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 960px) {
+  .product-grid { grid-template-columns: 1fr; }
+}
+
+.product-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.product-description {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.product-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 24px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--line);
+}
+
+.product-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-meta dt {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.product-meta dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.product-stock-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stock-items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.stock-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stock-item.is-total     { background: var(--slate-tint); }
+.stock-item.is-available { background: var(--surface); }
+.stock-item.is-reserved  { background: var(--salmon-tint); }
+.stock-item.is-threshold { background: var(--bg); }
+
+.stock-item-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.stock-item-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stock-item-num {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  font-feature-settings: "tnum";
+}
+
+.stock-item-unit {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.stock-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pearl);
+  overflow: hidden;
+}
+
+.stock-bar-fill {
+  height: 100%;
+  background: var(--slate);
+  border-radius: 999px;
+  transition: width .2s ease;
+}
+
+.stock-bar-legend {
+  display: flex;
+  justify-content: space-between;
+}
+
+.product-prices {
+  margin-bottom: 0;
+}
+
 /* ── Dashboard métriques ── */
 .metric-grid {
   display: grid;
