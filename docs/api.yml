@@ -1007,9 +1007,6 @@ components:
             weightGrams:
               type: number
               example: 500
-            pricePerKg:
-              type: number
-              readOnly: true
             validFrom:
               type: string
               format: date-time
@@ -1070,8 +1067,6 @@ components:
             contact:
               type: string
               nullable: true
-            pricePerKg:
-              type: number
             description:
               type: string
               nullable: true
@@ -1088,9 +1083,6 @@ components:
         contact:
           type: string
           nullable: true
-        pricePerKg:
-          type: number
-          minimum: 0
         description:
           type: string
           nullable: true

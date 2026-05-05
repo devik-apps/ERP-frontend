@@ -3,6 +3,12 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-04',
 
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.erp.local/v1',
+    },
+  },
+
   devtools: { enabled: true },
 
   modules: [

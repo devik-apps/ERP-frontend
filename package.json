@@ -7,13 +7,15 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "generate:api": "openapi-typescript docs/api.yml -o app/api/types.gen.ts"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.100.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
+    "openapi-fetch": "^0.17.0",
     "serwist": "^9.5.11",
     "tailwind-merge": "^3.5.0"
   },
@@ -21,6 +23,7 @@
     "@serwist/nuxt": "^9.5.11",
     "@tailwindcss/vite": "^4.2.4",
     "nuxt": "^4.4.4",
+    "openapi-typescript": "^7.13.0",
     "shadcn-nuxt": "^2.6.2",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
