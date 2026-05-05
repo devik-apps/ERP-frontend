@@ -1,0 +1,28 @@
+{
+  "name": "Poissonnerie du Vieux Port — ERP",
+  "short_name": "Poissonnerie",
+  "description": "ERP de gestion pour la Poissonnerie du Vieux Port — stocks, ventes, transformations.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "fr",
+  "dir": "ltr",
+  "background_color": "#F4F5F6",
+  "theme_color": "#4A6274",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/apple-touch-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
