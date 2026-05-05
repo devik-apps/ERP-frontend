@@ -1,4 +1,43 @@
 export type MovementType = 'Entrée' | 'Sortie'
+export type ProductStatus = 'Actif' | 'Stock bas' | 'Inactif'
+
+export interface Product {
+  name: string
+  category: string
+  status: ProductStatus
+  stock: number
+  unit: string
+  price: string
+  origin: string
+}
+
+export const PRODUCT_CATEGORIES = [
+  'Poissons frais',
+  'Préparations',
+  'Crustacés',
+  'Coquillages',
+  'Fumés',
+] as const
+
+export const PRODUCT_STATUSES: ProductStatus[] = ['Actif', 'Stock bas', 'Inactif']
+
+export const PRODUCTS: Product[] = [
+  { name: 'Thon rouge entier',  category: 'Poissons frais', status: 'Actif',     stock: 32.4, unit: 'kg', price: '38,00 €/kg', origin: 'Mareyeur Sète' },
+  { name: 'Saumon d’Écosse',    category: 'Poissons frais', status: 'Actif',     stock: 42.6, unit: 'kg', price: '24,50 €/kg', origin: 'Loch Duart' },
+  { name: 'Daurade royale',     category: 'Poissons frais', status: 'Actif',     stock: 18.3, unit: 'kg', price: '22,00 €/kg', origin: 'Élevage Corse' },
+  { name: 'Bar de ligne',       category: 'Poissons frais', status: 'Actif',     stock: 21.6, unit: 'kg', price: '32,00 €/kg', origin: 'Pêche Bretagne' },
+  { name: 'Cabillaud',          category: 'Poissons frais', status: 'Actif',     stock: 14.8, unit: 'kg', price: '19,80 €/kg', origin: 'Mer du Nord' },
+  { name: 'Lotte (queue)',      category: 'Poissons frais', status: 'Inactif',   stock: 0,    unit: 'kg', price: '28,90 €/kg', origin: 'Pêche Bretagne' },
+  { name: 'Filet de saumon',    category: 'Préparations',   status: 'Actif',     stock: 8.6,  unit: 'kg', price: '29,00 €/kg', origin: 'Atelier' },
+  { name: 'Filet de bar',       category: 'Préparations',   status: 'Actif',     stock: 4.2,  unit: 'kg', price: '38,00 €/kg', origin: 'Atelier' },
+  { name: 'Tartare de thon',    category: 'Préparations',   status: 'Actif',     stock: 1.6,  unit: 'kg', price: '46,00 €/kg', origin: 'Atelier' },
+  { name: 'Saumon fumé',        category: 'Fumés',          status: 'Actif',     stock: 6.4,  unit: 'kg', price: '52,00 €/kg', origin: 'Atelier' },
+  { name: 'Crevettes roses',    category: 'Crustacés',      status: 'Actif',     stock: 3.0,  unit: 'kg', price: '24,00 €/kg', origin: 'Madagascar' },
+  { name: 'Langoustines',       category: 'Crustacés',      status: 'Stock bas', stock: 1.2,  unit: 'kg', price: '48,00 €/kg', origin: 'Pêche Bretagne' },
+  { name: 'Saint-Jacques',      category: 'Coquillages',    status: 'Actif',     stock: 2.8,  unit: 'kg', price: '36,00 €/kg', origin: 'Baie de Saint-Brieuc' },
+  { name: 'Huîtres n°3',        category: 'Coquillages',    status: 'Actif',     stock: 24.0, unit: 'kg', price: '12,00 €/douz.', origin: 'Marennes Oléron' },
+  { name: 'Moules de bouchot',  category: 'Coquillages',    status: 'Actif',     stock: 11.4, unit: 'kg', price: '6,50 €/kg',  origin: 'Mont-Saint-Michel' },
+]
 
 export interface Movement {
   time: string
