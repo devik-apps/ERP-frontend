@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  /* Poissonnerie — rose, bleu poisson, gris écaille */
+  --color-rose-fish: oklch(0.78 0.16 355);
+  --color-blue-fish: oklch(0.52 0.14 240);
+  --color-scale-50: oklch(0.97 0.01 240);
+  --color-scale-100: oklch(0.93 0.02 240);
+  --color-scale-200: oklch(0.86 0.03 240);
+  --color-scale-300: oklch(0.76 0.04 240);
+  --color-scale-400: oklch(0.65 0.05 240);
+  --color-scale-500: oklch(0.56 0.05 240);
+  --color-scale-600: oklch(0.47 0.04 240);
+  --color-scale-700: oklch(0.38 0.04 240);
+  --color-scale-800: oklch(0.28 0.03 240);
+  --color-scale-900: oklch(0.19 0.02 240);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.5rem;
+}

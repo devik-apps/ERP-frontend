@@ -1,0 +1,1397 @@
+openapi: 3.0.3
+info:
+  title: ERP API
+  version: 1.0.0
+  description: |
+    API REST pour la gestion ERP — catalogue produits, stock, ventes, transformations.
+
+    **Conventions**
+    - Toutes les dates sont en ISO 8601 UTC : `2024-01-15T10:30:00Z`
+    - Les IDs sont des UUID v4 **générés côté client**
+    - Les montants et poids sont des `number` (decimal)
+    - Les poids sont toujours en **grammes**
+    - La pagination est incluse dans toutes les listes via `meta`
+    - Les ressources supprimées utilisent le soft delete (`deletedAt` non null)
+
+    **Pattern upsert idempotent**
+
+    Il n'y a pas de `POST`. La création et la modification passent toutes les deux par `PUT` :
+
+    ```
+    PUT /resources/{id}   →  crée si l'id n'existe pas, met à jour sinon
+    ```
+
+    Le client génère l'UUID avant d'appeler l'API. Ce pattern garantit l'idempotence :
+    rejouer la même requête `PUT` produit toujours le même résultat.
+
+    ```
+    # Création
+    PUT /products/550e8400-e29b-41d4-a716-446655440000
+    { "label": "Thon entier", ... }
+    → 201 Created
+
+    # Modification
+    PUT /products/550e8400-e29b-41d4-a716-446655440000
+    { "label": "Thon entier XL", ... }
+    → 200 OK
+    ```
+
+servers:
+  - url: https://api.erp.local/v1
+    description: Local
+
+tags:
+  - name: Categories
+  - name: Products
+  - name: Packaging
+  - name: Prices
+  - name: Suppliers
+  - name: Stock
+  - name: Transformations
+  - name: Sales
+
+paths:
+
+  # ── CATEGORIES ──────────────────────────────
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Liste des catégories
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/IsActiveParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+
+  /categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Categories]
+      summary: Détail d'une catégorie
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Categories]
+      summary: Créer ou modifier une catégorie
+      description: 201 si création, 200 si mise à jour
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Categories]
+      summary: Supprimer une catégorie (soft delete)
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── PRODUCTS ────────────────────────────────
+  /products:
+    get:
+      tags: [Products]
+      summary: Liste des produits
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/IsActiveParam'
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: parentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: rootOnly
+          in: query
+          schema:
+            type: boolean
+          description: Retourner uniquement les produits racines (sans parent)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProductSummary'
+
+  /products/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Products]
+      summary: Détail d'un produit avec ses prix actifs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Products]
+      summary: Créer ou modifier un produit
+      description: 201 si création, 200 si mise à jour
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Products]
+      summary: Supprimer un produit (soft delete)
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{id}/variants:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Products]
+      summary: Dérivés d'un produit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{id}/stock:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Products]
+      summary: Stock actuel d'un produit (solde calculé)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductStockSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{id}/prices:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Prices]
+      summary: Historique des prix d'un produit
+      parameters:
+        - name: activeOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductPrice'
+
+  # ── PRICES ──────────────────────────────────
+  /prices/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    put:
+      tags: [Prices]
+      summary: Créer ou modifier un prix
+      description: |
+        L'id du produit est dans le payload (`productId`).
+        201 si création, 200 si mise à jour.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPricePayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPrice'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPrice'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Prices]
+      summary: Supprimer un prix (soft delete)
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── PACKAGING ───────────────────────────────
+  /packaging:
+    get:
+      tags: [Packaging]
+      summary: Liste des conditionnements
+      parameters:
+        - $ref: '#/components/parameters/IsActiveParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Packaging'
+
+  /packaging/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    put:
+      tags: [Packaging]
+      summary: Créer ou modifier un conditionnement
+      description: 201 si création, 200 si mise à jour
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackagingPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packaging'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Packaging'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Packaging]
+      summary: Supprimer un conditionnement (soft delete)
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── SUPPLIERS ───────────────────────────────
+  /suppliers:
+    get:
+      tags: [Suppliers]
+      summary: Liste des fournisseurs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/IsActiveParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Supplier'
+
+  /suppliers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Suppliers]
+      summary: Détail d'un fournisseur
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Suppliers]
+      summary: Créer ou modifier un fournisseur
+      description: 201 si création, 200 si mise à jour
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Suppliers]
+      summary: Supprimer un fournisseur (soft delete)
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── STOCK ───────────────────────────────────
+  /stock:
+    get:
+      tags: [Stock]
+      summary: Mouvements de stock
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: productId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: supplierId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [entry, exit]
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StockMovement'
+
+  /stock/summary:
+    get:
+      tags: [Stock]
+      summary: Solde de stock par produit (vue agrégée)
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: lowStock
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductStockSummary'
+
+  /stock/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Stock]
+      summary: Détail d'un mouvement de stock
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovement'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Stock]
+      summary: Enregistrer ou corriger un mouvement de stock
+      description: |
+        201 si création, 200 si correction.
+        Les mouvements générés par une vente ou une transformation ne sont pas modifiables ici.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockMovementPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovement'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovement'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Stock]
+      summary: Annuler un mouvement (soft delete)
+      responses:
+        '204':
+          description: Annulé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── TRANSFORMATIONS ─────────────────────────
+  /transformations:
+    get:
+      tags: [Transformations]
+      summary: Liste des transformations
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: productId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Transformation'
+
+  /transformations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Transformations]
+      summary: Détail d'une transformation avec inputs et outputs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transformation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Transformations]
+      summary: Créer ou modifier une transformation
+      description: |
+        201 → génère automatiquement les mouvements de stock (sorties inputs, entrées outputs).
+        200 → recalcule les mouvements de stock associés.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransformationPayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transformation'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transformation'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── SALES ───────────────────────────────────
+  /sales:
+    get:
+      tags: [Sales]
+      summary: Liste des ventes
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedMeta'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SaleSummary'
+
+  /sales/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Sales]
+      summary: Détail d'une vente avec toutes ses lignes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Sales]
+      summary: Créer ou modifier une vente
+      description: |
+        201 → génère automatiquement les sorties de stock.
+        200 → recalcule le stock si les lignes ont changé.
+        Le `totalAmount` est calculé côté serveur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalePayload'
+      responses:
+        '200':
+          description: Modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '201':
+          description: Créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Sales]
+      summary: Annuler une vente (soft delete + réintégration stock)
+      responses:
+        '204':
+          description: Annulé
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ─────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────
+components:
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    SearchParam:
+      name: search
+      in: query
+      schema:
+        type: string
+    IsActiveParam:
+      name: isActive
+      in: query
+      schema:
+        type: boolean
+
+  responses:
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: La ressource demandée est introuvable
+    ValidationError:
+      description: Données invalides
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+  schemas:
+
+    Timestamps:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+
+    PaginatedMeta:
+      type: object
+      properties:
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalPages:
+              type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            fields:
+              type: object
+              additionalProperties:
+                type: string
+
+    Category:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            label:
+              type: string
+            description:
+              type: string
+              nullable: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    CategoryPayload:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+
+    Packaging:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            label:
+              type: string
+              example: sachet
+            description:
+              type: string
+              nullable: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    PackagingPayload:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    ProductSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        category:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            label:
+              type: string
+        isActive:
+          type: boolean
+        hasVariants:
+          type: boolean
+        currentStock:
+          type: number
+          readOnly: true
+        activePriceCount:
+          type: integer
+          readOnly: true
+
+    Product:
+      allOf:
+        - $ref: '#/components/schemas/ProductSummary'
+        - type: object
+          properties:
+            description:
+              type: string
+              nullable: true
+            parent:
+              nullable: true
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                label:
+                  type: string
+            activePrices:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductPrice'
+        - $ref: '#/components/schemas/Timestamps'
+
+    ProductPayload:
+      type: object
+      required: [label, categoryId]
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+
+    ProductPrice:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            productId:
+              type: string
+              format: uuid
+            packaging:
+              $ref: '#/components/schemas/Packaging'
+              nullable: true
+            amount:
+              type: number
+              example: 4500
+            weightGrams:
+              type: number
+              example: 500
+            pricePerKg:
+              type: number
+              readOnly: true
+            validFrom:
+              type: string
+              format: date-time
+            validTo:
+              type: string
+              format: date-time
+              nullable: true
+            isCurrentlyActive:
+              type: boolean
+              readOnly: true
+            description:
+              type: string
+              nullable: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    ProductPricePayload:
+      type: object
+      required: [productId, amount, weightGrams, validFrom]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        packagingId:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: number
+          minimum: 0
+        weightGrams:
+          type: number
+          minimum: 1
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    Supplier:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            name:
+              type: string
+            contact:
+              type: string
+              nullable: true
+            pricePerKg:
+              type: number
+            description:
+              type: string
+              nullable: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    SupplierPayload:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        contact:
+          type: string
+          nullable: true
+        pricePerKg:
+          type: number
+          minimum: 0
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    StockMovement:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            type:
+              type: string
+              enum: [entry, exit]
+            product:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                label:
+                  type: string
+            supplier:
+              nullable: true
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+            quantity:
+              type: number
+            weightGrams:
+              type: number
+            unitPrice:
+              type: number
+              nullable: true
+            origin:
+              type: string
+              enum: [manual, sale, transformation]
+              readOnly: true
+            description:
+              type: string
+              nullable: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    StockMovementPayload:
+      type: object
+      required: [type, productId, quantity]
+      properties:
+        type:
+          type: string
+          enum: [entry, exit]
+        productId:
+          type: string
+          format: uuid
+        supplierId:
+          type: string
+          format: uuid
+          nullable: true
+        quantity:
+          type: number
+          minimum: 0.001
+        weightGrams:
+          type: number
+          minimum: 1
+        unitPrice:
+          type: number
+          minimum: 0
+          nullable: true
+        description:
+          type: string
+          nullable: true
+
+    ProductStockSummary:
+      type: object
+      properties:
+        product:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            label:
+              type: string
+        totalQuantity:
+          type: number
+        totalWeightGrams:
+          type: number
+        lastMovementAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    TransformationInput:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        product:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            label:
+              type: string
+        quantity:
+          type: number
+        weightGrams:
+          type: number
+
+    TransformationOutput:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        product:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            label:
+              type: string
+        quantity:
+          type: number
+        weightGrams:
+          type: number
+        lossGrams:
+          type: number
+
+    Transformation:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            transformedAt:
+              type: string
+              format: date-time
+            description:
+              type: string
+              nullable: true
+            inputs:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransformationInput'
+            outputs:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransformationOutput'
+            totalInputWeightGrams:
+              type: number
+              readOnly: true
+            totalOutputWeightGrams:
+              type: number
+              readOnly: true
+            totalLossGrams:
+              type: number
+              readOnly: true
+            lossRatio:
+              type: number
+              readOnly: true
+            isActive:
+              type: boolean
+        - $ref: '#/components/schemas/Timestamps'
+
+    TransformationPayload:
+      type: object
+      required: [transformedAt, inputs, outputs]
+      properties:
+        transformedAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+          nullable: true
+        inputs:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, quantity, weightGrams]
+            properties:
+              productId:
+                type: string
+                format: uuid
+              quantity:
+                type: number
+              weightGrams:
+                type: number
+        outputs:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, quantity, weightGrams]
+            properties:
+              productId:
+                type: string
+                format: uuid
+              quantity:
+                type: number
+              weightGrams:
+                type: number
+              lossGrams:
+                type: number
+                default: 0
+
+    SaleItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        product:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            label:
+              type: string
+        price:
+          $ref: '#/components/schemas/ProductPrice'
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        subtotal:
+          type: number
+          readOnly: true
+
+    SaleSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        saleDate:
+          type: string
+          format: date-time
+        totalAmount:
+          type: number
+        itemCount:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    Sale:
+      allOf:
+        - $ref: '#/components/schemas/SaleSummary'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SaleItem'
+        - $ref: '#/components/schemas/Timestamps'
+
+    SalePayload:
+      type: object
+      required: [saleDate, items]
+      properties:
+        saleDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+          nullable: true
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, productPriceId, quantity]
+            properties:
+              productId:
+                type: string
+                format: uuid
+              productPriceId:
+                type: string
+                format: uuid
+              quantity:
+                type: number
+                minimum: 0.001
