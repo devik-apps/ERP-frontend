@@ -24,11 +24,10 @@ describe('ErpSidebar', () => {
     expect(active.text()).toContain('Produits')
   })
 
-  it('affiche les items désactivés avec is-disabled', async () => {
+  it('affiche Fournisseurs comme lien actif', async () => {
     const w = await mountSuspended(ErpSidebar)
-    const disabled = w.findAll('.sb-item.is-disabled')
-    expect(disabled.length).toBeGreaterThanOrEqual(1)
-    expect(disabled.some(d => d.text().includes('Fournisseurs'))).toBe(true)
+    const links = w.findAll('a.sb-item')
+    expect(links.some(l => l.text().includes('Fournisseurs'))).toBe(true)
   })
 
   it('affiche l\'utilisateur en pied de sidebar', async () => {
