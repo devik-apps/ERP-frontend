@@ -7,6 +7,7 @@ const routeLabels: Record<string, string> = {
   '/stock':          'Stock',
   '/sales':          'Ventes',
   '/transformations': 'Transformations',
+  '/suppliers':      'Fournisseurs',
 }
 
 const currentLabel = computed(() => {
