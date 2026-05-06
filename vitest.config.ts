@@ -8,6 +8,7 @@ export default defineVitestConfig({
         domEnvironment: 'happy-dom',
       },
     },
+    setupFiles: ['app/tests/mocks/setup.ts'],
     include: ['app/**/*.test.ts'],
     coverage: {
       include: ['app/**/*.vue', 'app/**/*.ts'],
