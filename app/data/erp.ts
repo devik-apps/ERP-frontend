@@ -179,6 +179,44 @@ export const SALES: Sale[] = [
   { id: 'T-2023', time: '03/05 11:48', segment: 'Restaurant', top: 'Tartare de thon',    items: 6, total: '168,00 €', seller: 'Marc', status: 'Payé'       },
 ]
 
+export type SupplierStatus = 'Actif' | 'Inactif' | 'Suspendu'
+export type SupplierCategory = 'Poissons frais' | 'Coquillages' | 'Crustacés' | 'Équipement'
+
+export const SUPPLIER_STATUSES: SupplierStatus[] = ['Actif', 'Inactif', 'Suspendu']
+export const SUPPLIER_CATEGORIES: SupplierCategory[] = ['Poissons frais', 'Coquillages', 'Crustacés', 'Équipement']
+
+export interface Supplier {
+  id: string
+  name: string
+  category: SupplierCategory
+  contact: string
+  phone: string
+  lastOrder: string
+  amount: string
+  delay: string
+  status: SupplierStatus
+}
+
+export const SUPPLIER_METRICS: Metric[] = [
+  { label: 'Fournisseurs actifs', value: '8',      unit: '/ 10', hint: '1 inactif, 1 suspendu', delta: '= vs avril',       up: false },
+  { label: 'Commandes en cours',  value: '3',      unit: '',     hint: 'mai 2026',               delta: '+1 vs lundi',      up: true  },
+  { label: 'Montant mensuel',     value: '12 840', unit: '€',    hint: 'mai 2026',               delta: '+4 % vs avril',    up: true  },
+  { label: 'Délai moyen',         value: '2,2',    unit: 'j',    hint: 'livraison',              delta: '−0,3 j vs avril',  up: true  },
+]
+
+export const SUPPLIERS: Supplier[] = [
+  { id: 'F-001', name: 'Mareyeur Sète',       category: 'Poissons frais', contact: 'Jean Petit',      phone: '04 67 48 21 30', lastOrder: '04/05/26', amount: '1 240 €', delay: '1 j',  status: 'Actif'   },
+  { id: 'F-002', name: 'Loch Duart Ltd',       category: 'Poissons frais', contact: 'Andrew MacLeod',  phone: '+44 1571 844 44', lastOrder: '04/05/26', amount: '2 180 €', delay: '3 j',  status: 'Actif'   },
+  { id: 'F-003', name: 'Élevage Corse SARL',  category: 'Poissons frais', contact: 'Pierre Colonna',  phone: '04 95 37 12 08', lastOrder: '02/05/26', amount: '680 €',   delay: '2 j',  status: 'Actif'   },
+  { id: 'F-004', name: 'Pêche Bretagne Coop', category: 'Poissons frais', contact: 'Yves Kerlan',     phone: '02 98 56 44 17', lastOrder: '03/05/26', amount: '1 560 €', delay: '2 j',  status: 'Actif'   },
+  { id: 'F-005', name: 'Mer du Nord Import',  category: 'Poissons frais', contact: 'Thomas Duval',    phone: '03 21 80 62 54', lastOrder: '03/05/26', amount: '480 €',   delay: '3 j',  status: 'Actif'   },
+  { id: 'F-006', name: 'Marennes Oléron AOC', category: 'Coquillages',    contact: 'Claire Morin',    phone: '05 46 75 38 20', lastOrder: '01/05/26', amount: '1 080 €', delay: '1 j',  status: 'Actif'   },
+  { id: 'F-007', name: 'Baie Saint-Brieuc',   category: 'Coquillages',    contact: 'Gilles Tanguy',   phone: '02 96 83 17 45', lastOrder: '03/05/26', amount: '840 €',   delay: '2 j',  status: 'Actif'   },
+  { id: 'F-008', name: 'MSM Moules',           category: 'Coquillages',    contact: 'René Leblanc',    phone: '02 33 60 44 89', lastOrder: '02/05/26', amount: '420 €',   delay: '1 j',  status: 'Inactif' },
+  { id: 'F-009', name: 'Madagascar Seafood',  category: 'Crustacés',      contact: 'Paul Ratsimba',   phone: '+261 20 22 48 16', lastOrder: '01/05/26', amount: '3 600 €', delay: '5 j',  status: 'Actif'   },
+  { id: 'F-010', name: "Équip' Marée",         category: 'Équipement',     contact: 'Sophie Martin',   phone: '01 42 60 33 71', lastOrder: '15/03/26', amount: '760 €',   delay: '—',    status: 'Suspendu'},
+]
+
 export const MOVEMENTS: Movement[] = [
   { time: '04/05 10:12', product: 'Thon rouge entier',   type: 'Entrée', qty: 4,  weight: '32 400 g', origin: 'Mareyeur Sète',     user: 'Marc' },
   { time: '04/05 09:48', product: 'Filet de saumon',     type: 'Sortie', qty: 6,  weight: '2 880 g',  origin: 'Vente comptoir',    user: 'Léa' },

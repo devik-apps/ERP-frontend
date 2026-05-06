@@ -7,16 +7,15 @@ import {
 const route = useRoute()
 
 const navItems = [
-  { id: 'dashboard',       label: 'Tableau de bord', icon: LayoutDashboard, to: '/dashboard' },
-  { id: 'catalog',         label: 'Produits',         icon: Grid2x2,         to: '/products' },
-  { id: 'stock',           label: 'Stock',             icon: Layers,          to: '/stock' },
-  { id: 'sales',           label: 'Ventes',           icon: TrendingUp,      to: '/sales' },
-  { id: 'transform',       label: 'Transformations',  icon: Truck,           to: '/transformations' },
-  { id: 'suppliers',       label: 'Fournisseurs',     icon: Users,           to: null, disabled: true },
+  { id: 'dashboard',  label: 'Tableau de bord', icon: LayoutDashboard, to: '/dashboard' },
+  { id: 'catalog',    label: 'Produits',         icon: Grid2x2,         to: '/products' },
+  { id: 'stock',      label: 'Stock',             icon: Layers,          to: '/stock' },
+  { id: 'sales',      label: 'Ventes',           icon: TrendingUp,      to: '/sales' },
+  { id: 'transform',  label: 'Transformations',  icon: Truck,           to: '/transformations' },
+  { id: 'suppliers',  label: 'Fournisseurs',     icon: Users,           to: '/suppliers' },
 ]
 
 function isActive(item: typeof navItems[number]) {
-  if (!item.to) return false
   if (item.to === '/products') return route.path === '/products' || route.path.startsWith('/products/')
   return route.path === item.to
 }
@@ -40,24 +39,15 @@ function isActive(item: typeof navItems[number]) {
 
     <nav class="sb-nav">
       <NuxtLink
-        v-for="item in navItems.filter(i => !i.disabled)"
+        v-for="item in navItems"
         :key="item.id"
-        :to="item.to!"
+        :to="item.to"
         class="sb-item"
         :class="{ 'is-active': isActive(item) }"
       >
         <component :is="item.icon" :size="16" :stroke-width="1" />
         <span>{{ item.label }}</span>
       </NuxtLink>
-      <span
-        v-for="item in navItems.filter(i => i.disabled)"
-        :key="item.id"
-        class="sb-item is-disabled"
-      >
-        <component :is="item.icon" :size="16" :stroke-width="1" />
-        <span>{{ item.label }}</span>
-        <span class="sb-soon">bientôt</span>
-      </span>
     </nav>
 
     <div class="sb-foot">
