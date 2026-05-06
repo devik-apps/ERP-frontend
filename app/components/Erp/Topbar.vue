@@ -1,16 +1,18 @@
 <script setup lang="ts">
-const props = defineProps<{ active: string }>()
+const route = useRoute()
 
-const sectionLabels: Record<string, string> = {
-  dashboard: 'Tableau de bord',
-  catalog:   'Produits',
-  product:   'Fiche produit',
-  stock:     'Stock',
-  sales:     'Ventes',
-  transform: 'Transformations',
+const routeLabels: Record<string, string> = {
+  '/dashboard':      'Tableau de bord',
+  '/products':       'Produits',
+  '/stock':          'Stock',
+  '/sales':          'Ventes',
+  '/transformations': 'Transformations',
 }
 
-const currentLabel = computed(() => sectionLabels[props.active] ?? 'Tableau de bord')
+const currentLabel = computed(() => {
+  if (route.path.startsWith('/products/')) return 'Fiche produit'
+  return routeLabels[route.path] ?? 'Tableau de bord'
+})
 
 const today = computed(() => {
   return new Intl.DateTimeFormat('fr-FR', {
