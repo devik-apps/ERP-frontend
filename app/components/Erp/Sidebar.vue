@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import {
-  LayoutDashboard, Grid2x2, Package, Layers,
+  LayoutDashboard, Grid2x2, Layers,
   TrendingUp, Truck, Users,
 } from 'lucide-vue-next'
 
-const props = defineProps<{ active: string }>()
-const emit = defineEmits<{ navigate: [id: string] }>()
+const route = useRoute()
 
 const navItems = [
-  { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-  { id: 'catalog',   label: 'Produits',         icon: Grid2x2 },
-  { id: 'product',   label: 'Fiche produit',    icon: Package },
-  { id: 'stock',     label: 'Stock',             icon: Layers },
-  { id: 'sales',     label: 'Ventes',           icon: TrendingUp },
-  { id: 'transform', label: 'Transformations', icon: Truck },
-  { id: 'suppliers', label: 'Fournisseurs',    icon: Users, disabled: true },
+  { id: 'dashboard',       label: 'Tableau de bord', icon: LayoutDashboard, to: '/dashboard' },
+  { id: 'catalog',         label: 'Produits',         icon: Grid2x2,         to: '/products' },
+  { id: 'stock',           label: 'Stock',             icon: Layers,          to: '/stock' },
+  { id: 'sales',           label: 'Ventes',           icon: TrendingUp,      to: '/sales' },
+  { id: 'transform',       label: 'Transformations',  icon: Truck,           to: '/transformations' },
+  { id: 'suppliers',       label: 'Fournisseurs',     icon: Users,           to: null, disabled: true },
 ]
 
-function onNav(id: string) {
-  emit('navigate', id)
+function isActive(item: typeof navItems[number]) {
+  if (!item.to) return false
+  if (item.to === '/products') return route.path === '/products' || route.path.startsWith('/products/')
+  return route.path === item.to
 }
 </script>
 
@@ -39,21 +39,25 @@ function onNav(id: string) {
     </div>
 
     <nav class="sb-nav">
-      <button
-        v-for="item in navItems"
+      <NuxtLink
+        v-for="item in navItems.filter(i => !i.disabled)"
         :key="item.id"
+        :to="item.to!"
         class="sb-item"
-        :class="{
-          'is-active':   active === item.id,
-          'is-disabled': item.disabled,
-        }"
-        :disabled="item.disabled"
-        @click="!item.disabled && onNav(item.id)"
+        :class="{ 'is-active': isActive(item) }"
       >
         <component :is="item.icon" :size="16" :stroke-width="1" />
         <span>{{ item.label }}</span>
-        <span v-if="item.disabled" class="sb-soon">bientôt</span>
-      </button>
+      </NuxtLink>
+      <span
+        v-for="item in navItems.filter(i => i.disabled)"
+        :key="item.id"
+        class="sb-item is-disabled"
+      >
+        <component :is="item.icon" :size="16" :stroke-width="1" />
+        <span>{{ item.label }}</span>
+        <span class="sb-soon">bientôt</span>
+      </span>
     </nav>
 
     <div class="sb-foot">
