@@ -39,7 +39,7 @@ test.describe('Mouvement de stock', () => {
 
   test('bascule entre Entrée et Sortie via les segments', async ({ page }) => {
     await page.locator('#stock').scrollIntoViewIfNeeded()
-    const segs = page.locator('[data-field="type"] .seg-item')
+    const segs = page.locator('[data-field="type"] .seg-btn')
     await segs.nth(1).click()
     await expect(page.locator('.movement-summary .mv-pill.is-out')).toBeVisible()
     await expect(page.locator('[data-field="origin"] .field-label')).toHaveText('Destination')
