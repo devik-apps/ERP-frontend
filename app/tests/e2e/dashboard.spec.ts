@@ -2,19 +2,16 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
-    // attend la fin de l'hydratation Vue avant de cliquer
+    await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
   })
 
-  test('rend la section avec son titre', async ({ page }) => {
-    await expect(page.locator('#dashboard')).toBeVisible()
+  test('rend la page avec son titre', async ({ page }) => {
     await expect(page.locator('.sec-title').first()).toHaveText('Tableau de bord')
   })
 
   test('rend 4 cartes de métriques', async ({ page }) => {
-    const sec = page.locator('section.sec').filter({ has: page.locator('#dashboard') })
-    await expect(sec.locator('.metric')).toHaveCount(4)
+    await expect(page.locator('.metric')).toHaveCount(4)
   })
 
   test('affiche les 11 mouvements récents', async ({ page }) => {

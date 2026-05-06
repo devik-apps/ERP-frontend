@@ -32,10 +32,10 @@ test.describe('Layout — sidebar', () => {
 
   test('contient les liens de navigation principaux', async ({ page }) => {
     const sb = page.locator('.sb')
-    await expect(sb.getByRole('button', { name: 'Tableau de bord' })).toBeVisible()
-    await expect(sb.getByRole('button', { name: 'Produits' })).toBeVisible()
-    await expect(sb.getByRole('button', { name: 'Fiche produit' })).toBeVisible()
-    await expect(sb.getByRole('button', { name: 'Stock', exact: true })).toBeVisible()
+    await expect(sb.getByRole('link', { name: 'Tableau de bord' })).toBeVisible()
+    await expect(sb.getByRole('link', { name: 'Produits' })).toBeVisible()
+    await expect(sb.getByRole('link', { name: 'Stock', exact: true })).toBeVisible()
+    await expect(sb.getByRole('link', { name: 'Ventes' })).toBeVisible()
   })
 
   test('affiche l\'utilisateur en pied de sidebar', async ({ page }) => {
