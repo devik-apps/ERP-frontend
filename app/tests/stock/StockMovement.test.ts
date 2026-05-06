@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { flushPromises } from '@vue/test-utils'
 import ErpStockMovement from '~/components/Erp/StockMovement.vue'
 
 describe('ErpStockMovement — entête', () => {
@@ -45,6 +46,8 @@ describe('ErpStockMovement — segments de type', () => {
 describe('ErpStockMovement — champs du formulaire', () => {
   it('expose un sélecteur de produit avec les 15 références', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const select = w.find('select[name="product"]')
     expect(select.exists()).toBe(true)
     const options = select.findAll('option')
@@ -122,13 +125,19 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('affiche le produit sélectionné dans le récap', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const select = w.find('select[name="product"]')
-    await select.setValue('Saumon d’Écosse')
-    expect(w.find('.movement-summary').text()).toContain('Saumon d’Écosse')
+    const firstOption = select.findAll('option')[1]!
+    await select.setValue(firstOption.element.value)
+    await w.vm.$nextTick()
+    expect(w.find('.movement-summary').text()).toContain(firstOption.text())
   })
 
   it('calcule le poids total = quantité × poids unitaire', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     await w.find('input[name="qty"]').setValue(4)
     await w.find('input[name="unitWeight"]').setValue(800)
     const total = w.find('[data-summary="total-weight"]')
@@ -138,6 +147,8 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('calcule le stock après mouvement pour une Entrée', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     await w.find('input[name="qty"]').setValue(4)
     await w.find('input[name="unitWeight"]').setValue(800)
     const after = w.find('[data-summary="stock-after"]')
@@ -147,6 +158,8 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('calcule le stock après mouvement pour une Sortie', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(2)
@@ -157,6 +170,8 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('signale un stock insuffisant quand une sortie dépasse le stock', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
@@ -169,12 +184,16 @@ describe('ErpStockMovement — récapitulatif live', () => {
 describe('ErpStockMovement — validation et soumission', () => {
   it('désactive le bouton tant que quantité ou poids est nul', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const submit = w.find('button[type="submit"]')
     expect(submit.attributes('disabled')).toBeDefined()
   })
 
   it('active le bouton quand quantité et poids sont renseignés', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     await w.find('input[name="qty"]').setValue(2)
     await w.find('input[name="unitWeight"]').setValue(500)
     const submit = w.find('button[type="submit"]')
@@ -183,11 +202,39 @@ describe('ErpStockMovement — validation et soumission', () => {
 
   it('désactive le bouton si la sortie dépasse le stock', async () => {
     const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
     await w.find('input[name="unitWeight"]').setValue(1000)
     const submit = w.find('button[type="submit"]')
     expect(submit.attributes('disabled')).toBeDefined()
+  })
+
+  it('soumet le formulaire via PUT /stock/{uuid} et réinitialise les champs', async () => {
+    const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
+    await w.find('input[name="qty"]').setValue(4)
+    await w.find('input[name="unitWeight"]').setValue(800)
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect((w.find('input[name="qty"]').element as HTMLInputElement).value).toBe('0')
+    expect((w.find('input[name="unitWeight"]').element as HTMLInputElement).value).toBe('0')
+  })
+
+  it('désactive le bouton pendant la mutation (isPending)', async () => {
+    const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await w.vm.$nextTick()
+    await w.find('input[name="qty"]').setValue(4)
+    await w.find('input[name="unitWeight"]').setValue(800)
+    const submit = w.find('button[type="submit"]')
+    expect(submit.attributes('disabled')).toBeUndefined()
+    await w.find('form').trigger('submit')
+    expect(submit.attributes('disabled')).toBeDefined()
+    await flushPromises()
   })
 })

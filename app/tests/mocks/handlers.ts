@@ -1,5 +1,34 @@
 import { http, HttpResponse } from 'msw'
 
+export const MOCK_MOVEMENTS = [
+  {
+    id: 'mov-001',
+    type: 'entry',
+    product: { id: 'prod-001', label: 'Thon rouge entier' },
+    supplier: null,
+    quantity: 4,
+    weightGrams: 32400,
+    unitPrice: null,
+    origin: 'manual',
+    description: 'Réception matin',
+    isActive: true,
+    createdAt: '2026-05-04T10:12:00Z',
+  },
+  {
+    id: 'mov-002',
+    type: 'exit',
+    product: { id: 'prod-007', label: 'Filet de saumon' },
+    supplier: null,
+    quantity: 6,
+    weightGrams: 2880,
+    unitPrice: null,
+    origin: 'manual',
+    description: 'Vente comptoir',
+    isActive: true,
+    createdAt: '2026-05-04T09:48:00Z',
+  },
+]
+
 const MOCK_CATEGORIES = [
   { id: 'cat-1', label: 'Poissons frais', isActive: true },
   { id: 'cat-2', label: 'Préparations',   isActive: true },
@@ -86,5 +115,34 @@ export const handlers = [
   http.get('https://api.erp.local/v1/products/:id', ({ params }) => {
     void params
     return HttpResponse.json(MOCK_PRODUCT_DETAIL)
+  }),
+
+  http.get('https://api.erp.local/v1/stock', () => {
+    return HttpResponse.json({
+      data: MOCK_MOVEMENTS,
+      meta: { total: 2, page: 1, limit: 50, totalPages: 1 },
+    })
+  }),
+
+  http.put('https://api.erp.local/v1/stock/:id', async ({ request, params }) => {
+    const body = await request.json() as {
+      type: string; productId: string; quantity: number; weightGrams?: number; description?: string
+    }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        type: body.type,
+        product: { id: body.productId, label: 'Thon rouge entier' },
+        supplier: null,
+        quantity: body.quantity,
+        weightGrams: body.weightGrams ?? 0,
+        unitPrice: null,
+        origin: 'manual',
+        description: body.description ?? null,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      },
+      { status: 201 },
+    )
   }),
 ]
