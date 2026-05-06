@@ -13,8 +13,8 @@ const navItems = [
   { id: 'product',   label: 'Fiche produit',    icon: Package },
   { id: 'stock',     label: 'Stock',             icon: Layers },
   { id: 'sales',     label: 'Ventes',           icon: TrendingUp },
-  { id: 'transform',     label: 'Transformations', icon: Truck,       disabled: true },
-  { id: 'suppliers',     label: 'Fournisseurs',    icon: Users,       disabled: true },
+  { id: 'transform', label: 'Transformations', icon: Truck },
+  { id: 'suppliers', label: 'Fournisseurs',    icon: Users, disabled: true },
 ]
 
 function onNav(id: string) {

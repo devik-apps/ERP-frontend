@@ -35,7 +35,8 @@ describe('ErpSidebar', () => {
       props: { active: 'dashboard' },
     })
     const disabled = w.findAll('.sb-item.is-disabled')
-    expect(disabled.length).toBeGreaterThanOrEqual(2)
+    expect(disabled.length).toBeGreaterThanOrEqual(1)
+    expect(disabled.some(d => d.text().includes('Fournisseurs'))).toBe(true)
   })
 
   it('affiche l\'utilisateur en pied de sidebar', async () => {
