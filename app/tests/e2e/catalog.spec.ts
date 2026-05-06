@@ -2,14 +2,12 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Catalogue produits', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/products')
     await page.waitForLoadState('networkidle')
   })
 
-  test('rend la section avec son titre', async ({ page }) => {
-    await expect(page.locator('#catalog')).toBeVisible()
-    const sec = page.locator('#catalog')
-    await expect(sec.locator('.sec-title')).toHaveText('Catalogue')
+  test('rend la page avec son titre', async ({ page }) => {
+    await expect(page.locator('.sec-title')).toHaveText('Catalogue')
   })
 
   test('rend 15 product cards', async ({ page }) => {

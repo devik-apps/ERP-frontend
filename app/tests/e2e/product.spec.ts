@@ -2,15 +2,13 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Fiche produit', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/products/POI-THO-001')
     await page.waitForLoadState('networkidle')
   })
 
-  test('rend la section avec son titre', async ({ page }) => {
-    await expect(page.locator('#product')).toBeVisible()
-    const sec = page.locator('#product')
-    await expect(sec.locator('.sec-title')).toHaveText('Thon rouge entier')
-    await expect(sec.locator('.eyebrow')).toHaveText('Fiche produit')
+  test('rend la page avec son titre', async ({ page }) => {
+    await expect(page.locator('.sec-title')).toHaveText('Thon rouge entier')
+    await expect(page.locator('.eyebrow')).toHaveText('Fiche produit')
   })
 
   test('affiche le résumé, le bloc stock et le tableau des prix', async ({ page }) => {
