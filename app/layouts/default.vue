@@ -18,7 +18,7 @@ onMounted(() => {
     { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.25, 0.5] },
   )
 
-  const sections = ['dashboard', 'catalog', 'product', 'stock']
+  const sections = ['dashboard', 'catalog', 'product', 'stock', 'sales']
   sections.forEach(id => {
     const el = document.getElementById(id)
     if (el) observer.observe(el)
