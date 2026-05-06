@@ -1,44 +1,59 @@
 <script setup lang="ts">
 import { ArrowDownToLine, ArrowUpFromLine, Save } from 'lucide-vue-next'
-import { PRODUCTS, type MovementType } from '~/data/erp'
+import { useProducts } from '~/composables/useProducts'
+import { useCreateStockMovement } from '~/composables/useStock'
+import { generateUUID } from '~/utils/uuid'
+
+type MovementType = 'Entrée' | 'Sortie'
 
 const OPERATORS = ['Marc', 'Léa', 'Atelier'] as const
 
+const { data: productsData } = useProducts()
+const products = computed(() => productsData.value?.data ?? [])
+
+const mutation = useCreateStockMovement()
+
 const type = ref<MovementType>('Entrée')
-const productName = ref<string>(PRODUCTS[0]!.name)
+const productId = ref<string>('')
 const qty = ref<number>(0)
 const unitWeight = ref<number>(0)
 const origin = ref<string>('')
 const operator = ref<(typeof OPERATORS)[number]>('Marc')
 const note = ref<string>('')
 
-const segments: { value: MovementType, label: string, icon: typeof ArrowDownToLine }[] = [
+watch(products, (list) => {
+  if (!productId.value && list.length > 0) {
+    productId.value = list[0]!.id ?? ''
+  }
+}, { immediate: true })
+
+const segments: { value: MovementType; label: string; icon: typeof ArrowDownToLine }[] = [
   { value: 'Entrée', label: 'Entrée', icon: ArrowDownToLine },
   { value: 'Sortie', label: 'Sortie', icon: ArrowUpFromLine },
 ]
 
-const product = computed(
-  () => PRODUCTS.find(p => p.name === productName.value) ?? PRODUCTS[0]!,
-)
+const product = computed(() => products.value.find(p => p.id === productId.value) ?? products.value[0])
+
+const currentStock = computed(() => product.value?.currentStock ?? 0)
 
 const totalGrams = computed(() => Math.max(0, qty.value) * Math.max(0, unitWeight.value))
 const totalKg = computed(() => totalGrams.value / 1000)
 
 const stockAfter = computed(() => {
   const delta = type.value === 'Entrée' ? totalKg.value : -totalKg.value
-  return product.value.stock + delta
+  return currentStock.value + delta
 })
 
 const insufficient = computed(
-  () => type.value === 'Sortie' && totalKg.value > product.value.stock,
+  () => type.value === 'Sortie' && totalKg.value > currentStock.value,
 )
 
 const canSubmit = computed(
-  () => qty.value > 0 && unitWeight.value > 0 && !insufficient.value,
+  () => qty.value > 0 && unitWeight.value > 0 && !insufficient.value && !mutation.isPending.value,
 )
 
 function fmtG(n: number): string {
-  return Math.round(n).toLocaleString('fr-FR').replace(/ | /g, ' ')
+  return Math.round(n).toLocaleString('fr-FR').replace(/\p{Zs}/gu, ' ')
 }
 
 function fmtKg(n: number): string {
@@ -53,7 +68,32 @@ const originPlaceholder = computed(
   () => (type.value === 'Entrée' ? 'Mareyeur, fournisseur, atelier…' : 'Comptoir, livraison, atelier…'),
 )
 
-function onSubmit() {}
+function onSubmit() {
+  if (!canSubmit.value || !product.value?.id) return
+  const uuid = generateUUID()
+  const description = note.value ? `[${operator.value}] ${note.value}` : `[${operator.value}]`
+  mutation.mutate(
+    {
+      id: uuid,
+      payload: {
+        type: type.value === 'Entrée' ? 'entry' : 'exit',
+        productId: product.value.id,
+        quantity: qty.value,
+        weightGrams: totalGrams.value,
+        description,
+      },
+    },
+    {
+      onSuccess: () => {
+        qty.value = 0
+        unitWeight.value = 0
+        origin.value = ''
+        note.value = ''
+        type.value = 'Entrée'
+      },
+    },
+  )
+}
 </script>
 
 <template>
@@ -88,9 +128,9 @@ function onSubmit() {}
         <div class="field-row">
           <label class="field" data-field="product">
             <span class="field-label">Produit</span>
-            <select v-model="productName" name="product">
-              <option v-for="p in PRODUCTS" :key="p.name" :value="p.name">
-                {{ p.name }}
+            <select v-model="productId" name="product">
+              <option v-for="p in products" :key="p.id" :value="p.id">
+                {{ p.label }}
               </option>
             </select>
           </label>
@@ -140,7 +180,7 @@ function onSubmit() {}
           <span class="mv-pill" :class="type === 'Entrée' ? 'is-in' : 'is-out'">
             <span class="mv-dot" /> {{ type }}
           </span>
-          <span class="movement-summary-product">{{ product.name }}</span>
+          <span class="movement-summary-product">{{ product?.label ?? '' }}</span>
         </div>
 
         <dl class="movement-summary-list">
@@ -158,12 +198,12 @@ function onSubmit() {}
           </div>
           <div>
             <dt>Stock actuel</dt>
-            <dd>{{ fmtKg(product.stock) }} {{ product.unit }}</dd>
+            <dd>{{ fmtKg(currentStock) }} kg</dd>
           </div>
           <div>
             <dt>Stock après mouvement</dt>
             <dd data-summary="stock-after" class="strong">
-              {{ fmtKg(stockAfter) }} {{ product.unit }}
+              {{ fmtKg(stockAfter) }} kg
             </dd>
           </div>
           <div>
