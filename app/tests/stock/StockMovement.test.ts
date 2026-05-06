@@ -26,19 +26,19 @@ describe('ErpStockMovement — entête', () => {
 describe('ErpStockMovement — segments de type', () => {
   it('expose deux segments Entrée et Sortie, Entrée actif par défaut', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     expect(segs).toHaveLength(2)
     expect(segs[0]!.text()).toBe('Entrée')
     expect(segs[1]!.text()).toBe('Sortie')
-    expect(segs[0]!.classes()).toContain('is-active')
+    expect(segs[0]!.classes()).toContain('is-on')
   })
 
   it('change le segment actif au clic sur Sortie', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
-    expect(segs[1]!.classes()).toContain('is-active')
-    expect(segs[0]!.classes()).not.toContain('is-active')
+    expect(segs[1]!.classes()).toContain('is-on')
+    expect(segs[0]!.classes()).not.toContain('is-on')
   })
 })
 
@@ -74,7 +74,7 @@ describe('ErpStockMovement — champs du formulaire', () => {
 
   it('renomme origine en destination quand Sortie est sélectionné', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     const label = w.find('[data-field="origin"] .field-label')
     expect(label.text()).toBe('Destination')
@@ -113,7 +113,7 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('passe le mv-pill à is-out quand Sortie est sélectionné', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     const pill = w.find('.movement-summary .mv-pill')
     expect(pill.classes()).toContain('is-out')
@@ -147,7 +147,7 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('calcule le stock après mouvement pour une Sortie', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(2)
     await w.find('input[name="unitWeight"]').setValue(1000)
@@ -157,7 +157,7 @@ describe('ErpStockMovement — récapitulatif live', () => {
 
   it('signale un stock insuffisant quand une sortie dépasse le stock', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
     await w.find('input[name="unitWeight"]').setValue(1000)
@@ -183,7 +183,7 @@ describe('ErpStockMovement — validation et soumission', () => {
 
   it('désactive le bouton si la sortie dépasse le stock', async () => {
     const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-item')
+    const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
     await w.find('input[name="unitWeight"]').setValue(1000)
