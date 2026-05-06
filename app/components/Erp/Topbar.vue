@@ -6,6 +6,7 @@ const sectionLabels: Record<string, string> = {
   catalog:   'Produits',
   product:   'Fiche produit',
   stock:     'Stock',
+  sales:     'Ventes',
 }
 
 const currentLabel = computed(() => sectionLabels[props.active] ?? 'Tableau de bord')

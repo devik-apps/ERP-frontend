@@ -103,6 +103,44 @@ export const METRICS: Metric[] = [
   { label: 'Transformations', value: '23',    unit: 'lots',   hint: 'mai 2026',       delta: '+4 vs avril',       up: true },
 ]
 
+export type SalesSegment = 'Comptoir' | 'Pro' | 'Restaurant' | 'Gros'
+export type SaleStatus = 'Payé' | 'En attente' | 'Annulé'
+
+export const SALES_SEGMENTS: SalesSegment[] = ['Comptoir', 'Pro', 'Restaurant', 'Gros']
+
+export interface Sale {
+  id: string
+  time: string
+  segment: SalesSegment
+  top: string
+  items: number
+  total: string
+  seller: string
+  status: SaleStatus
+}
+
+export const SALES_METRICS: Metric[] = [
+  { label: 'Chiffre d\'affaires', value: '1 248', unit: '€',  hint: '34 tickets',     delta: '+8 % vs lundi',    up: true  },
+  { label: 'Tickets émis',        value: '34',    unit: '',   hint: '4 en attente',   delta: '+6 vs lundi',      up: true  },
+  { label: 'Panier moyen',        value: '36,70', unit: '€',  hint: 'Méd. 28,40 €',   delta: '+1,80 € vs lundi', up: true  },
+  { label: 'Segment principal',   value: '62',    unit: '%',  hint: 'Comptoir',       delta: '20 tickets',       up: false },
+]
+
+export const SALES: Sale[] = [
+  { id: 'T-2034', time: '04/05 10:08', segment: 'Comptoir',   top: 'Filet de saumon',    items: 3, total: '42,80 €',  seller: 'Léa',  status: 'Payé'       },
+  { id: 'T-2033', time: '04/05 09:55', segment: 'Restaurant', top: 'Thon rouge',         items: 6, total: '184,50 €', seller: 'Marc', status: 'Payé'       },
+  { id: 'T-2032', time: '04/05 09:38', segment: 'Comptoir',   top: 'Crevettes roses',    items: 2, total: '24,00 €',  seller: 'Léa',  status: 'Payé'       },
+  { id: 'T-2031', time: '04/05 09:20', segment: 'Pro',        top: 'Saumon d’Écosse',    items: 4, total: '76,40 €',  seller: 'Marc', status: 'En attente' },
+  { id: 'T-2030', time: '04/05 08:42', segment: 'Comptoir',   top: 'Huîtres n°3',        items: 1, total: '12,00 €',  seller: 'Léa',  status: 'Payé'       },
+  { id: 'T-2029', time: '03/05 17:18', segment: 'Restaurant', top: 'Bar de ligne',       items: 5, total: '146,00 €', seller: 'Marc', status: 'Payé'       },
+  { id: 'T-2028', time: '03/05 16:54', segment: 'Comptoir',   top: 'Saint-Jacques',      items: 2, total: '38,40 €',  seller: 'Léa',  status: 'Annulé'     },
+  { id: 'T-2027', time: '03/05 16:10', segment: 'Pro',        top: 'Daurade royale',     items: 7, total: '212,00 €', seller: 'Marc', status: 'Payé'       },
+  { id: 'T-2026', time: '03/05 15:32', segment: 'Comptoir',   top: 'Cabillaud',          items: 3, total: '46,20 €',  seller: 'Léa',  status: 'Payé'       },
+  { id: 'T-2025', time: '03/05 14:48', segment: 'Gros',       top: 'Moules de bouchot',  items: 8, total: '342,00 €', seller: 'Marc', status: 'En attente' },
+  { id: 'T-2024', time: '03/05 13:22', segment: 'Comptoir',   top: 'Filet de bar',       items: 4, total: '58,80 €',  seller: 'Léa',  status: 'Payé'       },
+  { id: 'T-2023', time: '03/05 11:48', segment: 'Restaurant', top: 'Tartare de thon',    items: 6, total: '168,00 €', seller: 'Marc', status: 'Payé'       },
+]
+
 export const MOVEMENTS: Movement[] = [
   { time: '04/05 10:12', product: 'Thon rouge entier',   type: 'Entrée', qty: 4,  weight: '32 400 g', origin: 'Mareyeur Sète',     user: 'Marc' },
   { time: '04/05 09:48', product: 'Filet de saumon',     type: 'Sortie', qty: 6,  weight: '2 880 g',  origin: 'Vente comptoir',    user: 'Léa' },

@@ -13,7 +13,8 @@ test.describe('Dashboard', () => {
   })
 
   test('rend 4 cartes de métriques', async ({ page }) => {
-    await expect(page.locator('.metric')).toHaveCount(4)
+    const sec = page.locator('section.sec').filter({ has: page.locator('#dashboard') })
+    await expect(sec.locator('.metric')).toHaveCount(4)
   })
 
   test('affiche les 11 mouvements récents', async ({ page }) => {

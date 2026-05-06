@@ -4,5 +4,6 @@
     <ErpCatalog />
     <ErpProductDetail />
     <ErpStockMovement />
+    <ErpSales />
   </div>
 </template>

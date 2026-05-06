@@ -6,8 +6,12 @@ test.describe('Ventes', () => {
     await page.waitForLoadState('networkidle')
   })
 
+  function salesSection(page: import('@playwright/test').Page) {
+    return page.locator('section.sec').filter({ has: page.locator('#sales') })
+  }
+
   test('rend la section avec son titre', async ({ page }) => {
-    const sec = page.locator('#sales')
+    const sec = salesSection(page)
     await sec.scrollIntoViewIfNeeded()
     await expect(sec).toBeVisible()
     await expect(sec.locator('.eyebrow')).toHaveText('Ventes')
@@ -15,26 +19,26 @@ test.describe('Ventes', () => {
   })
 
   test('rend 4 cartes de métriques de ventes', async ({ page }) => {
-    const sec = page.locator('#sales')
+    const sec = salesSection(page)
     await sec.scrollIntoViewIfNeeded()
     await expect(sec.locator('.metric')).toHaveCount(4)
   })
 
   test('affiche les 12 tickets récents', async ({ page }) => {
-    const sec = page.locator('#sales')
+    const sec = salesSection(page)
     await sec.scrollIntoViewIfNeeded()
     await expect(sec.locator('.tbl tbody tr')).toHaveCount(12)
   })
 
   test('le filtre Comptoir réduit le tableau à 6 lignes', async ({ page }) => {
-    const sec = page.locator('#sales')
+    const sec = salesSection(page)
     await sec.scrollIntoViewIfNeeded()
     await sec.getByRole('button', { name: 'Comptoir' }).click()
     await expect(sec.locator('.tbl tbody tr')).toHaveCount(6)
   })
 
   test('le filtre Restaurant réduit le tableau à 3 lignes', async ({ page }) => {
-    const sec = page.locator('#sales')
+    const sec = salesSection(page)
     await sec.scrollIntoViewIfNeeded()
     await sec.getByRole('button', { name: 'Restaurant' }).click()
     await expect(sec.locator('.tbl tbody tr')).toHaveCount(3)

@@ -12,7 +12,7 @@ const navItems = [
   { id: 'catalog',   label: 'Produits',         icon: Grid2x2 },
   { id: 'product',   label: 'Fiche produit',    icon: Package },
   { id: 'stock',     label: 'Stock',             icon: Layers },
-  { id: 'sales',         label: 'Ventes',          icon: TrendingUp, disabled: true },
+  { id: 'sales',     label: 'Ventes',           icon: TrendingUp },
   { id: 'transform',     label: 'Transformations', icon: Truck,       disabled: true },
   { id: 'suppliers',     label: 'Fournisseurs',    icon: Users,       disabled: true },
 ]
