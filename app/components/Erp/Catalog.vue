@@ -1,28 +1,33 @@
 <script setup lang="ts">
 import { Search } from 'lucide-vue-next'
-import { PRODUCTS, PRODUCT_CATEGORIES, PRODUCT_STATUSES, type ProductStatus } from '~/data/erp'
+import { useCategories, useProducts, productStatus, type ProductStatus } from '~/composables/useProducts'
 
-type CategoryFilter = 'Toutes' | typeof PRODUCT_CATEGORIES[number]
 type StatusFilter = 'Tous' | ProductStatus
 
+const { data: categoriesData } = useCategories()
+const { data: productsData } = useProducts()
+
 const search = ref('')
-const activeCategory = ref<CategoryFilter>('Toutes')
+const activeCategory = ref('Toutes')
 const activeStatus = ref<StatusFilter>('Tous')
 
-const categoryChips: CategoryFilter[] = ['Toutes', ...PRODUCT_CATEGORIES]
-const statusChips: StatusFilter[] = ['Tous', ...PRODUCT_STATUSES]
+const categoryChips = computed(() => ['Toutes', ...(categoriesData.value?.data?.map(c => c.label ?? '') ?? [])])
+const statusChips: StatusFilter[] = ['Tous', 'Actif', 'Stock bas', 'Inactif']
+
+const totalCount = computed(() => productsData.value?.meta?.total ?? 0)
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
-  return PRODUCTS.filter(p => {
-    if (q && !p.name.toLowerCase().includes(q)) return false
-    if (activeCategory.value !== 'Toutes' && p.category !== activeCategory.value) return false
-    if (activeStatus.value !== 'Tous' && p.status !== activeStatus.value) return false
+  return (productsData.value?.data ?? []).filter(p => {
+    if (q && !p.label?.toLowerCase().includes(q)) return false
+    if (activeCategory.value !== 'Toutes' && p.category?.label !== activeCategory.value) return false
+    if (activeStatus.value !== 'Tous' && productStatus(p) !== activeStatus.value) return false
     return true
   })
 })
 
-function badgeClass(s: ProductStatus) {
+function badgeClass(p: { isActive?: boolean; currentStock?: number }) {
+  const s = productStatus(p)
   if (s === 'Stock bas') return 'is-low'
   if (s === 'Inactif')   return 'is-inactive'
   return 'is-active'
@@ -39,7 +44,7 @@ function stockFr(n: number) {
       <div>
         <div class="eyebrow">Produits</div>
         <h2 class="sec-title">Catalogue</h2>
-        <div class="sec-sub">15 références — {{ filtered.length }} affichées</div>
+        <div class="sec-sub">{{ totalCount }} références — {{ filtered.length }} affichées</div>
       </div>
       <div class="sec-right">
         <button class="btn btn-primary">Nouveau produit</button>
@@ -85,29 +90,28 @@ function stockFr(n: number) {
     </div>
 
     <div v-if="filtered.length" class="catalog-grid">
-      <article
+      <NuxtLink
         v-for="p in filtered"
-        :key="p.name"
+        :key="p.id"
+        :to="`/products/${p.id}`"
         class="card product-card"
       >
         <div class="product-head">
           <div>
-            <div class="product-name">{{ p.name }}</div>
-            <div class="product-category">{{ p.category }}</div>
+            <div class="product-name">{{ p.label }}</div>
+            <div class="product-category">{{ p.category?.label }}</div>
           </div>
-          <span class="badge" :class="badgeClass(p.status)">
-            <span class="badge-dot" /> {{ p.status }}
+          <span class="badge" :class="badgeClass(p)">
+            <span class="badge-dot" /> {{ productStatus(p) }}
           </span>
         </div>
         <div class="product-foot">
           <div class="product-stock">
-            <span class="product-stock-num">{{ stockFr(p.stock) }}</span>
-            <span class="product-stock-unit">{{ p.unit }}</span>
+            <span class="product-stock-num">{{ stockFr(p.currentStock ?? 0) }}</span>
+            <span class="product-stock-unit">kg</span>
           </div>
-          <div class="product-price">{{ p.price }}</div>
         </div>
-        <div class="product-origin muted">{{ p.origin }}</div>
-      </article>
+      </NuxtLink>
     </div>
 
     <div v-else class="card catalog-empty">
