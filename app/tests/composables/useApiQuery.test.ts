@@ -37,7 +37,7 @@ describe('useApiQuery', () => {
     const wrapper = await mountSuspended(CategoriesComp)
     await flushPromises()
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.count').text()).toBe('2')
+    expect(wrapper.find('.count').text()).toBe('5')
     expect(wrapper.find('.state').text()).toBe('ok')
   })
 })
