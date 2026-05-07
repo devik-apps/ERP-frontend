@@ -1,5 +1,20 @@
 import { http, HttpResponse } from 'msw'
 
+export const MOCK_SALES = [
+  { id: 'sale-001', saleDate: '2026-05-04T10:08:00Z', segment: 'Comptoir',   top: 'Filet de saumon',   itemCount: 3, totalAmount: 4280,  seller: 'Lea',  status: 'paid',       isActive: true },
+  { id: 'sale-002', saleDate: '2026-05-04T09:55:00Z', segment: 'Restaurant', top: 'Thon rouge',        itemCount: 6, totalAmount: 18450, seller: 'Marc', status: 'paid',       isActive: true },
+  { id: 'sale-003', saleDate: '2026-05-04T09:38:00Z', segment: 'Comptoir',   top: 'Crevettes roses',   itemCount: 2, totalAmount: 2400,  seller: 'Lea',  status: 'paid',       isActive: true },
+  { id: 'sale-004', saleDate: '2026-05-04T09:20:00Z', segment: 'Pro',        top: 'Saumon Ecosse',     itemCount: 4, totalAmount: 7640,  seller: 'Marc', status: 'pending', isActive: true },
+  { id: 'sale-005', saleDate: '2026-05-04T08:42:00Z', segment: 'Comptoir',   top: 'Huitres n3',        itemCount: 1, totalAmount: 1200,  seller: 'Lea',  status: 'paid',       isActive: true },
+  { id: 'sale-006', saleDate: '2026-05-03T17:18:00Z', segment: 'Restaurant', top: 'Bar de ligne',      itemCount: 5, totalAmount: 14600, seller: 'Marc', status: 'paid',       isActive: true },
+  { id: 'sale-007', saleDate: '2026-05-03T16:54:00Z', segment: 'Comptoir',   top: 'Saint-Jacques',     itemCount: 2, totalAmount: 3840,  seller: 'Lea',  status: 'cancelled',     isActive: false },
+  { id: 'sale-008', saleDate: '2026-05-03T16:10:00Z', segment: 'Pro',        top: 'Daurade royale',    itemCount: 7, totalAmount: 21200, seller: 'Marc', status: 'paid',       isActive: true },
+  { id: 'sale-009', saleDate: '2026-05-03T15:32:00Z', segment: 'Comptoir',   top: 'Cabillaud',         itemCount: 3, totalAmount: 4620,  seller: 'Lea',  status: 'paid',       isActive: true },
+  { id: 'sale-010', saleDate: '2026-05-03T14:48:00Z', segment: 'Gros',       top: 'Moules de bouchot', itemCount: 8, totalAmount: 34200, seller: 'Marc', status: 'pending', isActive: true },
+  { id: 'sale-011', saleDate: '2026-05-03T13:22:00Z', segment: 'Comptoir',   top: 'Filet de bar',      itemCount: 4, totalAmount: 5880,  seller: 'Lea',  status: 'paid',       isActive: true },
+  { id: 'sale-012', saleDate: '2026-05-03T11:48:00Z', segment: 'Restaurant', top: 'Tartare de thon',   itemCount: 6, totalAmount: 16800, seller: 'Marc', status: 'paid',       isActive: true },
+]
+
 export const MOCK_MOVEMENTS = [
   {
     id: 'mov-001',
@@ -115,6 +130,28 @@ export const handlers = [
   http.get('https://api.erp.local/v1/products/:id', ({ params }) => {
     void params
     return HttpResponse.json(MOCK_PRODUCT_DETAIL)
+  }),
+
+  http.get('https://api.erp.local/v1/sales', () => {
+    return HttpResponse.json({
+      data: MOCK_SALES,
+      meta: { total: 12, page: 1, limit: 50, totalPages: 1 },
+    })
+  }),
+
+  http.put('https://api.erp.local/v1/sales/:id', async ({ request, params }) => {
+    const body = await request.json() as { saleDate: string; description?: string | null; items: { productId: string; productPriceId: string; quantity: number }[] }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        saleDate: body.saleDate,
+        description: body.description ?? null,
+        totalAmount: 0,
+        itemCount: body.items.length,
+        isActive: true,
+      },
+      { status: 201 },
+    )
   }),
 
   http.get('https://api.erp.local/v1/stock', () => {
