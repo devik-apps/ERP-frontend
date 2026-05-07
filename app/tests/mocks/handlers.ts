@@ -1,5 +1,17 @@
 import { http, HttpResponse } from 'msw'
 
+export const MOCK_STOCK_SUMMARY = [
+  { product: { id: 'prod-001', label: 'Thon rouge entier' }, totalQuantity: 4, totalWeightGrams: 32400, lastMovementAt: '2026-05-04T10:12:00Z' },
+  { product: { id: 'prod-007', label: 'Filet de saumon' },   totalQuantity: 6, totalWeightGrams: 8600,  lastMovementAt: '2026-05-04T09:48:00Z' },
+]
+// total: 41 000 g = 41,0 kg, 2 références
+
+export const MOCK_TRANSFORMATIONS = [
+  { id: 'tr-001', transformedAt: '2026-05-04T09:00:00Z', inputs: [], outputs: [], totalInputWeightGrams: 14200, totalOutputWeightGrams: 9800, totalLossGrams: 4400, lossRatio: 0.31, isActive: true },
+  { id: 'tr-002', transformedAt: '2026-05-04T10:00:00Z', inputs: [], outputs: [], totalInputWeightGrams: 6400,  totalOutputWeightGrams: 4200, totalLossGrams: 2200, lossRatio: 0.34, isActive: true },
+]
+// meta.total = 7 (lots ce mois-ci)
+
 export const MOCK_SALES = [
   { id: 'sale-001', saleDate: '2026-05-04T10:08:00Z', segment: 'Comptoir',   top: 'Filet de saumon',   itemCount: 3, totalAmount: 4280,  seller: 'Lea',  status: 'paid',       isActive: true },
   { id: 'sale-002', saleDate: '2026-05-04T09:55:00Z', segment: 'Restaurant', top: 'Thon rouge',        itemCount: 6, totalAmount: 18450, seller: 'Marc', status: 'paid',       isActive: true },
@@ -152,6 +164,17 @@ export const handlers = [
       },
       { status: 201 },
     )
+  }),
+
+  http.get('https://api.erp.local/v1/stock/summary', () => {
+    return HttpResponse.json({ data: MOCK_STOCK_SUMMARY })
+  }),
+
+  http.get('https://api.erp.local/v1/transformations', () => {
+    return HttpResponse.json({
+      data: MOCK_TRANSFORMATIONS,
+      meta: { total: 7, page: 1, limit: 50, totalPages: 1 },
+    })
   }),
 
   http.get('https://api.erp.local/v1/stock', () => {
