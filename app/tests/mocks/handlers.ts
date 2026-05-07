@@ -166,7 +166,6 @@ export const handlers = [
     )
   }),
 
-<<<<<<< HEAD
   http.get('https://api.erp.local/v1/stock/summary', () => {
     return HttpResponse.json({ data: MOCK_STOCK_SUMMARY })
   }),
@@ -178,8 +177,6 @@ export const handlers = [
     })
   }),
 
-=======
->>>>>>> 07a5e04 (feat: sales-api -- GET /sales pagine, PUT /sales/{uuid}, filtre segment client-side)
   http.get('https://api.erp.local/v1/stock', () => {
     return HttpResponse.json({
       data: MOCK_MOVEMENTS,
