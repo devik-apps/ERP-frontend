@@ -7,11 +7,25 @@ import { useStockMovements } from '~/composables/useStock'
 type Filter = 'Tous' | 'Entrée' | 'Sortie'
 const filter = ref<Filter>('Tous')
 
-const { data: stockSummary }  = useStockSummary()
-const { data: productsData }  = useProducts()
-const { data: salesData }     = useSales()
-const { data: movementsData } = useStockMovements()
-const { data: transformData } = useTransformationCount()
+const stockSummaryQ  = useStockSummary()
+const productsQ      = useProducts()
+const salesQ         = useSales()
+const movementsQ     = useStockMovements()
+const transformQ     = useTransformationCount()
+
+const { data: stockSummary }  = stockSummaryQ
+const { data: productsData }  = productsQ
+const { data: salesData }     = salesQ
+const { data: movementsData } = movementsQ
+const { data: transformData } = transformQ
+
+const hasApiError = computed(() =>
+  stockSummaryQ.isError.value
+  || productsQ.isError.value
+  || salesQ.isError.value
+  || movementsQ.isError.value
+  || transformQ.isError.value,
+)
 
 function frFR(n: number, opts?: Intl.NumberFormatOptions) {
   return n.toLocaleString('fr-FR', opts).replace(/ /g, ' ')
@@ -87,6 +101,10 @@ function fmtDate(iso?: string | null) {
         <button class="btn btn-ghost">Exporter le rapport</button>
       </div>
     </header>
+
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
 
     <div class="metric-grid">
       <div class="card metric">
@@ -176,6 +194,9 @@ function fmtDate(iso?: string | null) {
             <td class="num">{{ fmtWeight(m.weightGrams) }}</td>
             <td class="muted">{{ m.description ?? m.origin }}</td>
             <td class="muted">{{ fmtDate(m.createdAt) }}</td>
+          </tr>
+          <tr v-if="!filteredMovements.length" class="is-empty">
+            <td colspan="6" class="muted">Aucun mouvement</td>
           </tr>
         </tbody>
       </table>

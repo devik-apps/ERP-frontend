@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpCatalog from '~/components/Erp/Catalog.vue'
 
 async function mount() {
@@ -124,5 +126,18 @@ describe('ErpCatalog — grille de cards', () => {
     const w = await mount()
     const first = w.findAll('.product-card')[0]!
     expect(first.attributes('href')).toContain('/products/prod-001')
+  })
+})
+
+describe('ErpCatalog — état API hors-ligne', () => {
+  it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/products', () => HttpResponse.error()),
+    )
+    const w = await mount()
+    await flushPromises()
+    const banner = w.find('.api-state.is-error')
+    expect(banner.exists()).toBe(true)
+    expect(banner.text()).toContain('API indisponible')
   })
 })

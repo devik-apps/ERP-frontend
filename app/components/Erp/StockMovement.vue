@@ -8,8 +8,10 @@ type MovementType = 'Entrée' | 'Sortie'
 
 const OPERATORS = ['Marc', 'Léa', 'Atelier'] as const
 
-const { data: productsData } = useProducts()
+const productsQ = useProducts()
+const { data: productsData } = productsQ
 const products = computed(() => productsData.value?.data ?? [])
+const hasApiError = computed(() => productsQ.isError.value)
 
 const mutation = useCreateStockMovement()
 
@@ -105,6 +107,10 @@ function onSubmit() {
         <div class="sec-sub">Saisir une entrée ou une sortie de stock</div>
       </div>
     </header>
+
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
 
     <form class="movement-grid" @submit.prevent="onSubmit">
       <div class="card movement-form">

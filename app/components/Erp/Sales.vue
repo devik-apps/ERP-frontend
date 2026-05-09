@@ -10,8 +10,10 @@ const SALE_SEGMENTS: SaleSegment[] = ['Comptoir', 'Pro', 'Restaurant', 'Gros']
 const filter = ref<SegmentFilter>('Tous')
 const filterChips: SegmentFilter[] = ['Tous', ...SALE_SEGMENTS]
 
-const { data: salesData } = useSales()
+const salesQ = useSales()
+const { data: salesData } = salesQ
 const allSales = computed(() => (salesData.value?.data ?? []) as SaleRow[])
+const hasApiError = computed(() => salesQ.isError.value)
 
 const filteredSales = computed(() => {
   if (filter.value === 'Tous') return allSales.value
@@ -59,6 +61,10 @@ function fmtAmount(cents?: number): string {
         </button>
       </div>
     </header>
+
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
 
     <div class="metric-grid">
       <div v-for="m in SALES_METRICS" :key="m.label" class="card metric">
@@ -118,6 +124,9 @@ function fmtAmount(cents?: number): string {
                 <span class="badge-dot" /> {{ s.status }}
               </span>
             </td>
+          </tr>
+          <tr v-if="!filteredSales.length" class="is-empty">
+            <td colspan="7" class="muted">Aucun ticket</td>
           </tr>
         </tbody>
       </table>

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpDashboard from '~/components/Erp/Dashboard.vue'
 
 describe('ErpDashboard — entête', () => {
@@ -119,6 +121,36 @@ describe('ErpDashboard — journal des mouvements', () => {
     await flushPromises()
     expect(w.find('.mv-pill.is-in').exists()).toBe(true)
     expect(w.find('.mv-pill.is-out').exists()).toBe(true)
+  })
+})
+
+describe('ErpDashboard — état API hors-ligne', () => {
+  it('affiche un bandeau "API indisponible" quand /stock/summary échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/stock/summary', () =>
+        HttpResponse.error(),
+      ),
+    )
+    const w = await mountSuspended(ErpDashboard)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    const banner = w.find('.api-state.is-error')
+    expect(banner.exists()).toBe(true)
+    expect(banner.text()).toContain('API indisponible')
+  })
+
+  it('affiche une ligne "Aucun mouvement" quand /stock renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/stock', () =>
+        HttpResponse.json({ data: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } }),
+      ),
+    )
+    const w = await mountSuspended(ErpDashboard)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun mouvement')
   })
 })
 
