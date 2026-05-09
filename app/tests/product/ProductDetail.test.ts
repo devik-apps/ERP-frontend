@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpProductDetail from '~/components/Erp/ProductDetail.vue'
 
 async function mount() {
@@ -111,5 +113,27 @@ describe('ErpProductDetail — tableau des prix', () => {
     const cells = first.findAll('td')
     expect(cells[0]!.text()).toBe('Détail')
     expect(cells[1]!.text()).toContain('€/kg')
+  })
+})
+
+describe('ErpProductDetail — état API hors-ligne', () => {
+  it('affiche un bandeau "API indisponible" quand /products/:id échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/products/:id', () => HttpResponse.error()),
+    )
+    const w = await mount()
+    await flushPromises()
+    expect(w.find('.api-state.is-error').exists()).toBe(true)
+  })
+
+  it('affiche une ligne "Aucun tarif" quand /products/:id/prices renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/products/:id/prices', () =>
+        HttpResponse.json({ data: [] }),
+      ),
+    )
+    const w = await mount()
+    await flushPromises()
+    expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun tarif')
   })
 })

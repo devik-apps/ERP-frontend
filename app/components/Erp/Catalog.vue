@@ -4,8 +4,12 @@ import { useCategories, useProducts, productStatus, type ProductStatus } from '~
 
 type StatusFilter = 'Tous' | ProductStatus
 
-const { data: categoriesData } = useCategories()
-const { data: productsData } = useProducts()
+const categoriesQ = useCategories()
+const productsQ = useProducts()
+const { data: categoriesData } = categoriesQ
+const { data: productsData } = productsQ
+
+const hasApiError = computed(() => categoriesQ.isError.value || productsQ.isError.value)
 
 const search = ref('')
 const activeCategory = ref('Toutes')
@@ -50,6 +54,10 @@ function stockFr(n: number) {
         <button class="btn btn-primary">Nouveau produit</button>
       </div>
     </header>
+
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
 
     <div class="catalog-toolbar card">
       <div class="catalog-search">

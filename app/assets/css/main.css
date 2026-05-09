@@ -427,6 +427,41 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--coral-ink);
 }
 
+/* ── États API (loading / error / empty) ── */
+.api-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.api-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.api-state.is-error {
+  background: var(--coral-soft);
+  color: var(--coral-ink);
+  border-color: var(--coral-soft);
+}
+
+.api-state.is-loading {
+  background: var(--slate-tint);
+  color: var(--slate-ink);
+}
+
+.api-state.is-empty {
+  background: var(--pearl);
+  color: var(--ink-3);
+}
+
 /* ── Mouvements (entrée/sortie) ── */
 .mv-pill {
   display: inline-flex;

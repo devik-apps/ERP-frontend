@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpStockMovement from '~/components/Erp/StockMovement.vue'
 
 describe('ErpStockMovement — entête', () => {
@@ -236,5 +238,18 @@ describe('ErpStockMovement — validation et soumission', () => {
     await w.find('form').trigger('submit')
     expect(submit.attributes('disabled')).toBeDefined()
     await flushPromises()
+  })
+})
+
+describe('ErpStockMovement — état API hors-ligne', () => {
+  it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/products', () => HttpResponse.error()),
+    )
+    const w = await mountSuspended(ErpStockMovement)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.api-state.is-error').exists()).toBe(true)
   })
 })

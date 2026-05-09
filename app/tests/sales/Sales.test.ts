@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpSales from '~/components/Erp/Sales.vue'
 
 describe('ErpSales -- entete', () => {
@@ -144,5 +146,31 @@ describe('ErpSales -- journal des tickets', () => {
     await flushPromises()
     await w.vm.$nextTick()
     expect(w.find('.badge.is-inactive').exists()).toBe(true)
+  })
+})
+
+describe('ErpSales — état API hors-ligne', () => {
+  it('affiche un bandeau "API indisponible" quand /sales échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/sales', () => HttpResponse.error()),
+    )
+    const w = await mountSuspended(ErpSales)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.api-state.is-error').exists()).toBe(true)
+  })
+
+  it('affiche une ligne "Aucun ticket" quand /sales renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/sales', () =>
+        HttpResponse.json({ data: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } }),
+      ),
+    )
+    const w = await mountSuspended(ErpSales)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun ticket')
   })
 })
