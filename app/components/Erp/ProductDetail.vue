@@ -4,9 +4,14 @@ import { useProduct, useProductStock, useProductPrices, productStatus } from '~/
 
 const props = defineProps<{ id: string }>()
 
-const { data: product } = useProduct(() => props.id)
-const { data: stock } = useProductStock(() => props.id)
-const { data: pricesData } = useProductPrices(() => props.id)
+const productQ = useProduct(() => props.id)
+const stockQ = useProductStock(() => props.id)
+const pricesQ = useProductPrices(() => props.id)
+const { data: product } = productQ
+const { data: stock } = stockQ
+const { data: pricesData } = pricesQ
+
+const hasApiError = computed(() => productQ.isError.value || stockQ.isError.value || pricesQ.isError.value)
 
 const prices = computed(() => pricesData.value?.data ?? [])
 
@@ -57,6 +62,10 @@ function badgeClass() {
         </button>
       </div>
     </header>
+
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
 
     <div class="product-grid">
       <article class="card product-summary">
@@ -136,6 +145,9 @@ function badgeClass() {
           <tr v-for="row in prices" :key="row.id">
             <td class="strong">{{ row.packaging?.label }}</td>
             <td class="num">{{ formatPrice(row.amount ?? 0, row.weightGrams ?? 1000) }}</td>
+          </tr>
+          <tr v-if="!prices.length" class="is-empty">
+            <td colspan="2" class="muted">Aucun tarif</td>
           </tr>
         </tbody>
       </table>
