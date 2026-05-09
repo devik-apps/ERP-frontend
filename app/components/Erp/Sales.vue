@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Plus, Receipt } from 'lucide-vue-next'
-import { SALES_METRICS } from '~/data/erp'
 import { useSales, useCreateSale, type SaleSegment, type SaleRow } from '~/composables/useSales'
 
 type SegmentFilter = 'Tous' | SaleSegment
@@ -21,6 +20,57 @@ const filteredSales = computed(() => {
 })
 
 const mutation = useCreateSale()
+
+const fmtInt = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/ /g, ' ')
+const fmtDecimal = (n: number) =>
+  n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const metrics = computed(() => {
+  const list = allSales.value
+  const ticketCount = list.length
+  const totalCents = list.reduce((acc, s) => acc + (s.totalAmount ?? 0), 0)
+  const totalEuros = totalCents / 100
+  const avgEuros = ticketCount > 0 ? totalCents / ticketCount / 100 : 0
+
+  const counts = new Map<SaleSegment, number>()
+  for (const s of list) {
+    if (!s.segment) continue
+    counts.set(s.segment, (counts.get(s.segment) ?? 0) + 1)
+  }
+  let topSegment: SaleSegment | '' = ''
+  let topCount = 0
+  for (const [seg, n] of counts) {
+    if (n > topCount) { topSegment = seg; topCount = n }
+  }
+  const topShare = ticketCount > 0 ? Math.round((topCount / ticketCount) * 100) : 0
+
+  return [
+    {
+      label: "Chiffre d'affaires",
+      value: fmtInt(totalEuros),
+      unit: '€',
+      hint: `${ticketCount} ticket${ticketCount > 1 ? 's' : ''}`,
+    },
+    {
+      label: 'Tickets émis',
+      value: String(ticketCount),
+      unit: '',
+      hint: 'sur la période',
+    },
+    {
+      label: 'Panier moyen',
+      value: fmtDecimal(avgEuros),
+      unit: '€',
+      hint: `${ticketCount} ticket${ticketCount > 1 ? 's' : ''}`,
+    },
+    {
+      label: 'Segment principal',
+      value: String(topShare),
+      unit: '%',
+      hint: topSegment || '—',
+    },
+  ]
+})
 
 function statusClass(status?: string): string {
   if (status === 'paid')      return 'is-active'
@@ -67,7 +117,7 @@ function fmtAmount(cents?: number): string {
     </div>
 
     <div class="metric-grid">
-      <div v-for="m in SALES_METRICS" :key="m.label" class="card metric">
+      <div v-for="m in metrics" :key="m.label" class="card metric">
         <div class="metric-label">{{ m.label }}</div>
         <div class="metric-value">
           <span class="metric-num">{{ m.value }}</span>
@@ -75,7 +125,6 @@ function fmtAmount(cents?: number): string {
         </div>
         <div class="metric-foot">
           <span class="metric-hint">{{ m.hint }}</span>
-          <span class="metric-delta" :class="m.up ? 'is-up' : 'is-flat'">{{ m.delta }}</span>
         </div>
       </div>
     </div>

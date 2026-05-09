@@ -39,13 +39,39 @@ describe('ErpSales -- metriques', () => {
     expect(labels[3]).toContain('Segment')
   })
 
-  it('affiche les valeurs principales', async () => {
+  it('affiche les valeurs principales agrégées depuis /sales', async () => {
     const w = await mountSuspended(ErpSales)
+    await flushPromises()
+    await w.vm.$nextTick()
     const nums = w.findAll('.metric-num').map(el => el.text())
-    expect(nums[0]).toBe('1 248')
-    expect(nums[1]).toBe('34')
-    expect(nums[2]).toBe('36,70')
-    expect(nums[3]).toBe('62')
+    expect(nums[0]).toBe('1 351')
+    expect(nums[1]).toBe('12')
+    expect(nums[2]).toBe('112,59')
+    expect(nums[3]).toBe('50')
+  })
+
+  it('le segment principal affiche Comptoir comme libellé', async () => {
+    const w = await mountSuspended(ErpSales)
+    await flushPromises()
+    await w.vm.$nextTick()
+    const hints = w.findAll('.metric-hint').map(el => el.text())
+    expect(hints[3]).toBe('Comptoir')
+  })
+
+  it('les KPIs valent 0 quand /sales renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/sales', () =>
+        HttpResponse.json({ data: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } }),
+      ),
+    )
+    const w = await mountSuspended(ErpSales)
+    await flushPromises()
+    await w.vm.$nextTick()
+    const nums = w.findAll('.metric-num').map(el => el.text())
+    expect(nums[0]).toBe('0')
+    expect(nums[1]).toBe('0')
+    expect(nums[2]).toBe('0,00')
+    expect(nums[3]).toBe('0')
   })
 })
 

@@ -101,13 +101,6 @@ export interface Sale {
   status: SaleStatus
 }
 
-export const SALES_METRICS: Metric[] = [
-  { label: 'Chiffre d\'affaires', value: '1 248', unit: '€',  hint: '34 tickets',     delta: '+8 % vs lundi',    up: true  },
-  { label: 'Tickets émis',        value: '34',    unit: '',   hint: '4 en attente',   delta: '+6 vs lundi',      up: true  },
-  { label: 'Panier moyen',        value: '36,70', unit: '€',  hint: 'Méd. 28,40 €',   delta: '+1,80 € vs lundi', up: true  },
-  { label: 'Segment principal',   value: '62',    unit: '%',  hint: 'Comptoir',       delta: '20 tickets',       up: false },
-]
-
 export type TransformStatus = 'En cours' | 'Terminé' | 'Contrôle'
 
 export const TRANSFORM_STATUSES: TransformStatus[] = ['En cours', 'Terminé', 'Contrôle']
