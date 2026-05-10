@@ -1,31 +1,43 @@
 <script setup lang="ts">
 import { Plus, FileBarChart } from 'lucide-vue-next'
-import {
-  SUPPLIERS, SUPPLIER_METRICS, SUPPLIER_STATUSES, SUPPLIER_CATEGORIES,
-  type SupplierStatus, type SupplierCategory,
-} from '~/data/erp'
+import { useSuppliers } from '~/composables/useSuppliers'
+import type { components } from '~/api/types.gen'
 
-type StatusFilter   = 'Tous' | SupplierStatus
-type CategoryFilter = 'Toutes' | SupplierCategory
+type Supplier = components['schemas']['Supplier']
 
-const statusFilter   = ref<StatusFilter>('Tous')
-const categoryFilter = ref<CategoryFilter>('Toutes')
+type StatusFilter = 'Tous' | 'Actif' | 'Inactif'
 
-const statusChips: StatusFilter[]   = ['Tous', ...SUPPLIER_STATUSES]
-const categoryChips: CategoryFilter[] = ['Toutes', ...SUPPLIER_CATEGORIES]
+const statusFilter = ref<StatusFilter>('Tous')
+const statusChips: StatusFilter[] = ['Tous', 'Actif', 'Inactif']
+
+const suppliersQ = useSuppliers()
+const { data: suppliersData } = suppliersQ
+const allSuppliers = computed(() => (suppliersData.value?.data ?? []) as Supplier[])
+const hasApiError = computed(() => suppliersQ.isError.value)
 
 const filteredSuppliers = computed(() => {
-  return SUPPLIERS.filter(s => {
-    const matchStatus   = statusFilter.value === 'Tous'    || s.status === statusFilter.value
-    const matchCategory = categoryFilter.value === 'Toutes' || s.category === categoryFilter.value
-    return matchStatus && matchCategory
-  })
+  if (statusFilter.value === 'Tous') return allSuppliers.value
+  const wantActive = statusFilter.value === 'Actif'
+  return allSuppliers.value.filter(s => Boolean(s.isActive) === wantActive)
 })
 
-function statusClass(s: SupplierStatus): string {
-  if (s === 'Actif')    return 'is-active'
-  if (s === 'Suspendu') return 'is-low'
-  return 'is-inactive'
+const metrics = computed(() => {
+  const list = allSuppliers.value
+  const total = list.length
+  const actifs = list.filter(s => s.isActive).length
+  const inactifs = total - actifs
+  const withContact = list.filter(s => Boolean(s.contact)).length
+  return [
+    { label: 'Total',        value: String(total),       unit: '', hint: 'fournisseurs' },
+    { label: 'Actifs',       value: String(actifs),      unit: '', hint: 'isActive=true' },
+    { label: 'Inactifs',     value: String(inactifs),    unit: '', hint: 'isActive=false' },
+    { label: 'Avec contact', value: String(withContact), unit: '', hint: 'contact renseigné' },
+  ]
+})
+
+function shortId(id?: string): string {
+  if (!id) return '—'
+  return id.length > 8 ? id.slice(0, 8) : id
 }
 </script>
 
@@ -47,8 +59,12 @@ function statusClass(s: SupplierStatus): string {
       </div>
     </header>
 
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
+
     <div class="metric-grid">
-      <div v-for="m in SUPPLIER_METRICS" :key="m.label" class="card metric">
+      <div v-for="m in metrics" :key="m.label" class="card metric">
         <div class="metric-label">{{ m.label }}</div>
         <div class="metric-value">
           <span class="metric-num">{{ m.value }}</span>
@@ -56,7 +72,6 @@ function statusClass(s: SupplierStatus): string {
         </div>
         <div class="metric-foot">
           <span class="metric-hint">{{ m.hint }}</span>
-          <span class="metric-delta" :class="m.up ? 'is-up' : 'is-flat'">{{ m.delta }}</span>
         </div>
       </div>
     </div>
@@ -68,17 +83,6 @@ function statusClass(s: SupplierStatus): string {
           <div class="card-sub">{{ filteredSuppliers.length }} fournisseur{{ filteredSuppliers.length > 1 ? 's' : '' }}</div>
         </div>
         <div class="table-filters">
-          <div class="table-actions" data-filter="category">
-            <button
-              v-for="chip in categoryChips"
-              :key="chip"
-              class="chip"
-              :class="{ 'is-active': categoryFilter === chip }"
-              @click="categoryFilter = chip"
-            >
-              {{ chip }}
-            </button>
-          </div>
           <div class="table-actions" data-filter="status">
             <button
               v-for="chip in statusChips"
@@ -98,30 +102,25 @@ function statusClass(s: SupplierStatus): string {
           <tr>
             <th>Réf.</th>
             <th>Fournisseur</th>
-            <th>Catégorie</th>
             <th>Contact</th>
-            <th>Téléphone</th>
-            <th>Dernière commande</th>
-            <th class="num">Montant</th>
-            <th class="num">Délai</th>
+            <th>Description</th>
             <th>Statut</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="s in filteredSuppliers" :key="s.id">
-            <td class="muted">{{ s.id }}</td>
+            <td class="muted">{{ shortId(s.id) }}</td>
             <td class="strong">{{ s.name }}</td>
-            <td class="muted">{{ s.category }}</td>
-            <td>{{ s.contact }}</td>
-            <td class="muted">{{ s.phone }}</td>
-            <td class="muted">{{ s.lastOrder }}</td>
-            <td class="num">{{ s.amount }}</td>
-            <td class="num muted">{{ s.delay }}</td>
+            <td>{{ s.contact ?? '—' }}</td>
+            <td class="muted">{{ s.description ?? '—' }}</td>
             <td>
-              <span class="badge" :class="statusClass(s.status)">
-                <span class="badge-dot" /> {{ s.status }}
+              <span class="badge" :class="s.isActive ? 'is-active' : 'is-inactive'">
+                <span class="badge-dot" /> {{ s.isActive ? 'Actif' : 'Inactif' }}
               </span>
             </td>
+          </tr>
+          <tr v-if="!filteredSuppliers.length" class="is-empty">
+            <td colspan="5" class="muted">Aucun fournisseur</td>
           </tr>
         </tbody>
       </table>
