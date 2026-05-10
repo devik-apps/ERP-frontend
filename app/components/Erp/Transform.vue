@@ -1,23 +1,50 @@
 <script setup lang="ts">
 import { Plus, FileBarChart } from 'lucide-vue-next'
-import { TRANSFORMS, TRANSFORM_METRICS, TRANSFORM_STATUSES, type TransformStatus } from '~/data/erp'
+import { useTransformations } from '~/composables/useTransformations'
+import type { components } from '~/api/types.gen'
 
-type StatusFilter = 'Tous' | TransformStatus
+type Transformation = components['schemas']['Transformation']
 
-const filter = ref<StatusFilter>('Tous')
+const transformQ = useTransformations()
+const { data: transformData } = transformQ
+const allTransforms = computed(() => (transformData.value?.data ?? []) as Transformation[])
+const totalLots = computed(() => transformData.value?.meta?.total ?? 0)
+const hasApiError = computed(() => transformQ.isError.value)
 
-const filterChips: StatusFilter[] = ['Tous', ...TRANSFORM_STATUSES]
+const fmtKg = (g?: number) =>
+  ((g ?? 0) / 1000).toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
-const filteredLots = computed(() => {
-  if (filter.value === 'Tous') return TRANSFORMS
-  return TRANSFORMS.filter(t => t.status === filter.value)
-})
-
-function statusClass(s: TransformStatus): string {
-  if (s === 'Terminé')  return 'is-active'
-  if (s === 'En cours') return 'is-low'
-  return 'is-inactive'
+function fmtDate(iso?: string): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  return `${dd}/${mm}`
 }
+
+function fmtId(id?: string): string {
+  if (!id) return '—'
+  return id.length > 10 ? id.slice(0, 10) : id
+}
+
+const metrics = computed(() => {
+  const list = allTransforms.value
+  const count = list.length
+  const avgYield = count > 0
+    ? Math.round(
+        (list.reduce((acc, t) => acc + (1 - (t.lossRatio ?? 0)), 0) / count) * 100,
+      )
+    : 0
+  const totalLossKg = list.reduce((acc, t) => acc + ((t.totalLossGrams ?? 0) / 1000), 0)
+  const activeCount = list.filter(t => t.isActive).length
+
+  return [
+    { label: 'Lots du mois',    value: String(totalLots.value), unit: 'lots', hint: 'mois en cours' },
+    { label: 'Rendement moyen', value: String(avgYield),         unit: '%',    hint: `${count} lot${count > 1 ? 's' : ''}` },
+    { label: 'Lots actifs',     value: String(activeCount),      unit: '',     hint: 'isActive=true' },
+    { label: 'Pertes',          value: totalLossKg.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }), unit: 'kg', hint: 'cumul lots' },
+  ]
+})
 </script>
 
 <template>
@@ -38,8 +65,12 @@ function statusClass(s: TransformStatus): string {
       </div>
     </header>
 
+    <div v-if="hasApiError" class="api-state is-error" role="alert">
+      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
+    </div>
+
     <div class="metric-grid">
-      <div v-for="m in TRANSFORM_METRICS" :key="m.label" class="card metric">
+      <div v-for="m in metrics" :key="m.label" class="card metric">
         <div class="metric-label">{{ m.label }}</div>
         <div class="metric-value">
           <span class="metric-num">{{ m.value }}</span>
@@ -47,7 +78,6 @@ function statusClass(s: TransformStatus): string {
         </div>
         <div class="metric-foot">
           <span class="metric-hint">{{ m.hint }}</span>
-          <span class="metric-delta" :class="m.up ? 'is-up' : 'is-flat'">{{ m.delta }}</span>
         </div>
       </div>
     </div>
@@ -56,18 +86,7 @@ function statusClass(s: TransformStatus): string {
       <div class="table-head">
         <div>
           <div class="card-title">Lots récents</div>
-          <div class="card-sub">12 derniers lots</div>
-        </div>
-        <div class="table-actions">
-          <button
-            v-for="chip in filterChips"
-            :key="chip"
-            class="chip"
-            :class="{ 'is-active': filter === chip }"
-            @click="filter = chip"
-          >
-            {{ chip }}
-          </button>
+          <div class="card-sub">{{ allTransforms.length }} lot{{ allTransforms.length > 1 ? 's' : '' }}</div>
         </div>
       </div>
 
@@ -76,28 +95,29 @@ function statusClass(s: TransformStatus): string {
           <tr>
             <th>Lot</th>
             <th>Date</th>
-            <th>Matière</th>
-            <th>Produit fini</th>
             <th class="num">Entrée</th>
             <th class="num">Sortie</th>
+            <th class="num">Pertes</th>
             <th class="num">Rendement</th>
-            <th>Statut</th>
+            <th>Actif</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="t in filteredLots" :key="t.id">
-            <td class="strong">{{ t.id }}</td>
-            <td class="muted">{{ t.date }}</td>
-            <td>{{ t.source }}</td>
-            <td class="muted">{{ t.output }}</td>
-            <td class="num">{{ t.inputKg }}</td>
-            <td class="num">{{ t.outputKg }}</td>
-            <td class="num strong">{{ t.yield }}</td>
+          <tr v-for="t in allTransforms" :key="t.id">
+            <td class="strong">{{ fmtId(t.id) }}</td>
+            <td class="muted">{{ fmtDate(t.transformedAt) }}</td>
+            <td class="num">{{ fmtKg(t.totalInputWeightGrams) }} kg</td>
+            <td class="num">{{ fmtKg(t.totalOutputWeightGrams) }} kg</td>
+            <td class="num muted">{{ fmtKg(t.totalLossGrams) }} kg</td>
+            <td class="num strong">{{ Math.round((1 - (t.lossRatio ?? 0)) * 100) }} %</td>
             <td>
-              <span class="badge" :class="statusClass(t.status)">
-                <span class="badge-dot" /> {{ t.status }}
+              <span class="badge" :class="t.isActive ? 'is-active' : 'is-inactive'">
+                <span class="badge-dot" /> {{ t.isActive ? 'Actif' : 'Inactif' }}
               </span>
             </td>
+          </tr>
+          <tr v-if="!allTransforms.length" class="is-empty">
+            <td colspan="7" class="muted">Aucun lot</td>
           </tr>
         </tbody>
       </table>
