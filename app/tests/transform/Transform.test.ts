@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { flushPromises } from '@vue/test-utils'
+import { http, HttpResponse } from 'msw'
+import { server } from '~/tests/mocks/server'
 import ErpTransform from '~/components/Erp/Transform.vue'
 
 describe('ErpTransform — entête', () => {
@@ -33,89 +36,83 @@ describe('ErpTransform — métriques', () => {
     expect(labels).toEqual([
       'Lots du mois',
       'Rendement moyen',
-      'Lots en cours',
+      'Lots actifs',
       'Pertes',
     ])
   })
 
-  it('affiche les valeurs principales', async () => {
+  it('affiche les valeurs agrégées depuis /transformations', async () => {
     const w = await mountSuspended(ErpTransform)
+    await flushPromises()
+    await w.vm.$nextTick()
     const nums = w.findAll('.metric-num').map(el => el.text())
-    expect(nums[0]).toBe('23')
-    expect(nums[1]).toBe('74')
-    expect(nums[2]).toBe('5')
-    expect(nums[3]).toBe('18,4')
-  })
-})
-
-describe('ErpTransform — filtres par statut', () => {
-  it('expose 4 chips de filtre, Tous actif par défaut', async () => {
-    const w = await mountSuspended(ErpTransform)
-    const chips = w.findAll('.chip')
-    expect(chips).toHaveLength(4)
-    const labels = chips.map(c => c.text())
-    expect(labels).toEqual(['Tous', 'En cours', 'Terminé', 'Contrôle'])
-    expect(chips[0]!.classes()).toContain('is-active')
+    expect(nums[0]).toBe('7')
+    expect(nums[1]).toBe('68')
+    expect(nums[2]).toBe('2')
+    expect(nums[3]).toBe('6,6')
   })
 
-  it('filtre les lots En cours au clic', async () => {
+  it('les KPIs valent 0 quand /transformations renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/transformations', () =>
+        HttpResponse.json({ data: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } }),
+      ),
+    )
     const w = await mountSuspended(ErpTransform)
-    const chips = w.findAll('.chip')
-    await chips[1]!.trigger('click')
-    expect(chips[1]!.classes()).toContain('is-active')
-    expect(chips[0]!.classes()).not.toContain('is-active')
-    expect(w.findAll('.tbl tbody tr').length).toBe(4)
-  })
-
-  it('filtre les lots Terminé au clic', async () => {
-    const w = await mountSuspended(ErpTransform)
-    const chips = w.findAll('.chip')
-    await chips[2]!.trigger('click')
-    expect(w.findAll('.tbl tbody tr').length).toBe(6)
-  })
-
-  it('filtre les lots Contrôle au clic', async () => {
-    const w = await mountSuspended(ErpTransform)
-    const chips = w.findAll('.chip')
-    await chips[3]!.trigger('click')
-    expect(w.findAll('.tbl tbody tr').length).toBe(2)
+    await flushPromises()
+    await w.vm.$nextTick()
+    const nums = w.findAll('.metric-num').map(el => el.text())
+    expect(nums[0]).toBe('0')
+    expect(nums[1]).toBe('0')
+    expect(nums[2]).toBe('0')
+    expect(nums[3]).toBe('0,0')
   })
 })
 
 describe('ErpTransform — journal des lots', () => {
-  it('affiche le titre et le sous-titre du tableau', async () => {
+  it('affiche le titre du tableau', async () => {
     const w = await mountSuspended(ErpTransform)
-    const head = w.find('.table-head')
-    expect(head.text()).toContain('Lots récents')
-    expect(head.text()).toContain('12 derniers lots')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.table-head').text()).toContain('Lots récents')
   })
 
-  it('rend les 12 lots par défaut (filtre Tous)', async () => {
+  it('rend les lignes correspondant au mock', async () => {
     const w = await mountSuspended(ErpTransform)
+    await flushPromises()
+    await w.vm.$nextTick()
     const rows = w.findAll('.tbl tbody tr')
-    expect(rows.length).toBe(12)
+    expect(rows.length).toBe(2)
   })
 
-  it('contient les 8 colonnes attendues', async () => {
+  it('contient les 7 colonnes attendues', async () => {
     const w = await mountSuspended(ErpTransform)
     const headers = w.findAll('.tbl thead th').map(th => th.text())
     expect(headers).toEqual([
-      'Lot', 'Date', 'Matière', 'Produit fini', 'Entrée', 'Sortie', 'Rendement', 'Statut',
+      'Lot', 'Date', 'Entrée', 'Sortie', 'Pertes', 'Rendement', 'Actif',
     ])
   })
 
-  it('affiche un badge is-active pour les lots terminés', async () => {
+  it('affiche une ligne "Aucun lot" quand /transformations renvoie un tableau vide', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/transformations', () =>
+        HttpResponse.json({ data: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } }),
+      ),
+    )
     const w = await mountSuspended(ErpTransform)
-    expect(w.find('.badge.is-active').exists()).toBe(true)
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun lot')
   })
 
-  it('affiche un badge is-low pour les lots en cours', async () => {
+  it('affiche un bandeau "API indisponible" quand /transformations échoue', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/transformations', () => HttpResponse.error()),
+    )
     const w = await mountSuspended(ErpTransform)
-    expect(w.find('.badge.is-low').exists()).toBe(true)
-  })
-
-  it('affiche un badge is-inactive pour les lots en contrôle', async () => {
-    const w = await mountSuspended(ErpTransform)
-    expect(w.find('.badge.is-inactive').exists()).toBe(true)
+    await flushPromises()
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.api-state.is-error').exists()).toBe(true)
   })
 })
