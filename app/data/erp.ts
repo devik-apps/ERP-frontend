@@ -101,44 +101,6 @@ export interface Sale {
   status: SaleStatus
 }
 
-export type TransformStatus = 'En cours' | 'Terminé' | 'Contrôle'
-
-export const TRANSFORM_STATUSES: TransformStatus[] = ['En cours', 'Terminé', 'Contrôle']
-
-export interface Transform {
-  id: string
-  date: string
-  source: string
-  output: string
-  inputKg: string
-  outputKg: string
-  yield: string
-  operator: string
-  status: TransformStatus
-}
-
-export const TRANSFORM_METRICS: Metric[] = [
-  { label: 'Lots du mois',     value: '23',   unit: 'lots', hint: 'mai 2026',     delta: '+4 vs avril',       up: true  },
-  { label: 'Rendement moyen',  value: '74',   unit: '%',    hint: '12 lots clos', delta: '+2 pts vs avril',   up: true  },
-  { label: 'Lots en cours',    value: '5',    unit: '/ 23', hint: '2 en contrôle', delta: '−1 vs lundi',      up: false },
-  { label: 'Pertes',           value: '18,4', unit: 'kg',   hint: 'rebuts mai',   delta: '+1,2 kg vs avril',  up: false },
-]
-
-export const TRANSFORMS: Transform[] = [
-  { id: 'L-2026-118', date: '04/05', source: 'Saumon d’Écosse',   output: 'Filet de saumon',   inputKg: '14,2 kg', outputKg: '9,8 kg',  yield: '69 %', operator: 'Atelier', status: 'En cours' },
-  { id: 'L-2026-117', date: '04/05', source: 'Thon rouge',        output: 'Tartare de thon',   inputKg: '6,4 kg',  outputKg: '4,2 kg',  yield: '66 %', operator: 'Atelier', status: 'En cours' },
-  { id: 'L-2026-116', date: '03/05', source: 'Saumon d’Écosse',   output: 'Saumon fumé',       inputKg: '8,0 kg',  outputKg: '6,4 kg',  yield: '80 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-115', date: '03/05', source: 'Bar de ligne',      output: 'Filet de bar',      inputKg: '7,2 kg',  outputKg: '4,2 kg',  yield: '58 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-114', date: '03/05', source: 'Daurade royale',    output: 'Filet de daurade',  inputKg: '6,1 kg',  outputKg: '3,8 kg',  yield: '62 %', operator: 'Atelier', status: 'Contrôle' },
-  { id: 'L-2026-113', date: '02/05', source: 'Cabillaud',         output: 'Filet de cabillaud',inputKg: '9,0 kg',  outputKg: '6,3 kg',  yield: '70 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-112', date: '02/05', source: 'Thon rouge',        output: 'Longe de thon',     inputKg: '12,0 kg', outputKg: '8,4 kg',  yield: '70 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-111', date: '02/05', source: 'Saumon d’Écosse',   output: 'Pavé de saumon',    inputKg: '10,0 kg', outputKg: '7,5 kg',  yield: '75 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-110', date: '01/05', source: 'Saint-Jacques',     output: 'Noix décortiquées', inputKg: '4,0 kg',  outputKg: '2,4 kg',  yield: '60 %', operator: 'Atelier', status: 'En cours' },
-  { id: 'L-2026-109', date: '01/05', source: 'Crevettes roses',   output: 'Crevettes cuites',  inputKg: '5,0 kg',  outputKg: '4,6 kg',  yield: '92 %', operator: 'Atelier', status: 'Contrôle' },
-  { id: 'L-2026-108', date: '30/04', source: 'Lotte (queue)',     output: 'Médaillons de lotte',inputKg: '6,8 kg', outputKg: '4,1 kg',  yield: '60 %', operator: 'Atelier', status: 'Terminé' },
-  { id: 'L-2026-107', date: '30/04', source: 'Saumon d’Écosse',   output: 'Saumon fumé',       inputKg: '7,5 kg',  outputKg: '6,2 kg',  yield: '83 %', operator: 'Atelier', status: 'En cours' },
-]
-
 export const SALES: Sale[] = [
   { id: 'T-2034', time: '04/05 10:08', segment: 'Comptoir',   top: 'Filet de saumon',    items: 3, total: '42,80 €',  seller: 'Léa',  status: 'Payé'       },
   { id: 'T-2033', time: '04/05 09:55', segment: 'Restaurant', top: 'Thon rouge',         items: 6, total: '184,50 €', seller: 'Marc', status: 'Payé'       },

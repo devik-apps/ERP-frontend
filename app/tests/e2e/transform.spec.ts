@@ -1,7 +1,22 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+
+const API = 'https://api.erp.local/v1'
+
+const TRANSFORMATIONS = [
+  { id: 'tr-001', transformedAt: '2026-05-04T09:00:00Z', inputs: [], outputs: [], totalInputWeightGrams: 14200, totalOutputWeightGrams: 9800, totalLossGrams: 4400, lossRatio: 0.31, isActive: true },
+  { id: 'tr-002', transformedAt: '2026-05-04T10:00:00Z', inputs: [], outputs: [], totalInputWeightGrams: 6400,  totalOutputWeightGrams: 4200, totalLossGrams: 2200, lossRatio: 0.34, isActive: true },
+]
+
+async function mockApi(page: Page) {
+  await page.route(`${API}/transformations*`, route => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ data: TRANSFORMATIONS, meta: { total: 7, page: 1, limit: 50, totalPages: 1 } }),
+  }))
+}
 
 test.describe('Transformations', () => {
   test.beforeEach(async ({ page }) => {
+    await mockApi(page)
     await page.goto('/transformations')
     await page.waitForLoadState('networkidle')
   })
@@ -15,18 +30,8 @@ test.describe('Transformations', () => {
     await expect(page.locator('.metric')).toHaveCount(4)
   })
 
-  test('affiche les 12 lots récents', async ({ page }) => {
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(12)
-  })
-
-  test('le filtre En cours réduit le tableau à 4 lignes', async ({ page }) => {
-    await page.getByRole('button', { name: 'En cours', exact: true }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(4)
-  })
-
-  test('le filtre Terminé réduit le tableau à 6 lignes', async ({ page }) => {
-    await page.getByRole('button', { name: 'Terminé', exact: true }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(6)
+  test('affiche les lots renvoyés par /transformations', async ({ page }) => {
+    await expect(page.locator('.tbl tbody tr')).toHaveCount(2)
   })
 
   test('la sidebar expose un lien Transformations actif', async ({ page }) => {
