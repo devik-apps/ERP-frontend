@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { Menu } from 'lucide-vue-next'
+
 const route = useRoute()
+const nav = useMobileNav()
 
 const routeLabels: Record<string, string> = {
   '/dashboard':      'Tableau de bord',
@@ -25,6 +28,14 @@ const today = computed(() => {
 <template>
   <div class="topbar">
     <div class="crumbs">
+      <button
+        type="button"
+        class="sb-toggle"
+        aria-label="Ouvrir le menu"
+        @click="nav.toggle()"
+      >
+        <Menu :size="16" :stroke-width="1.5" />
+      </button>
       <span>Poissonnerie du Vieux Port</span>
       <span class="sep">/</span>
       <span class="cur">{{ currentLabel }}</span>

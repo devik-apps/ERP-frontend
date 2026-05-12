@@ -5,6 +5,7 @@ import {
 } from 'lucide-vue-next'
 
 const route = useRoute()
+const nav = useMobileNav()
 
 const navItems = [
   { id: 'dashboard',  label: 'Tableau de bord', icon: LayoutDashboard, to: '/dashboard' },
@@ -22,7 +23,14 @@ function isActive(item: typeof navItems[number]) {
 </script>
 
 <template>
-  <aside class="sb">
+  <button
+    v-if="nav.open.value"
+    type="button"
+    class="sb-backdrop"
+    aria-label="Fermer le menu"
+    @click="nav.close()"
+  />
+  <aside class="sb" :class="{ 'is-open': nav.open.value }">
     <div class="sb-brand">
       <span class="sb-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1">
@@ -44,6 +52,7 @@ function isActive(item: typeof navItems[number]) {
         :to="item.to"
         class="sb-item"
         :class="{ 'is-active': isActive(item) }"
+        @click="nav.close()"
       >
         <component :is="item.icon" :size="16" :stroke-width="1" />
         <span>{{ item.label }}</span>
