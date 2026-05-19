@@ -52,7 +52,6 @@ export const MOCK_MOVEMENTS = [
     origin: 'manual',
     description: 'Réception matin',
     isActive: true,
-    createdAt: '2026-05-04T10:12:00Z',
   },
   {
     id: 'mov-002',
@@ -65,7 +64,6 @@ export const MOCK_MOVEMENTS = [
     origin: 'manual',
     description: 'Vente comptoir',
     isActive: true,
-    createdAt: '2026-05-04T09:48:00Z',
   },
 ]
 
@@ -113,10 +111,10 @@ const MOCK_PRODUCT_STOCK = {
 }
 
 const MOCK_PRODUCT_PRICES = [
-  { id: 'price-1', productId: 'prod-001', packaging: { id: 'pkg-1', label: 'Détail'     }, amount: 3800, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z', isCurrentlyActive: true },
-  { id: 'price-2', productId: 'prod-001', packaging: { id: 'pkg-2', label: 'Pro'        }, amount: 3400, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z', isCurrentlyActive: true },
-  { id: 'price-3', productId: 'prod-001', packaging: { id: 'pkg-3', label: 'Restaurant' }, amount: 3250, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z', isCurrentlyActive: true },
-  { id: 'price-4', productId: 'prod-001', packaging: { id: 'pkg-4', label: 'Gros'       }, amount: 2980, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z', isCurrentlyActive: true },
+  { id: 'price-1', productId: 'prod-001', packaging: { id: 'pkg-1', label: 'Détail'     }, amount: 3800, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
+  { id: 'price-2', productId: 'prod-001', packaging: { id: 'pkg-2', label: 'Pro'        }, amount: 3400, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
+  { id: 'price-3', productId: 'prod-001', packaging: { id: 'pkg-3', label: 'Restaurant' }, amount: 3250, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
+  { id: 'price-4', productId: 'prod-001', packaging: { id: 'pkg-4', label: 'Gros'       }, amount: 2980, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
 ]
 
 export const handlers = [
@@ -220,7 +218,6 @@ export const handlers = [
         origin: 'manual',
         description: body.description ?? null,
         isActive: true,
-        createdAt: new Date().toISOString(),
       },
       { status: 201 },
     )

@@ -20,10 +20,10 @@ const PRODUCT_STOCK = {
 }
 
 const PRODUCT_PRICES = [
-  { id: 'price-1', productId: 'POI-THO-001', packaging: { id: 'pkg-1', label: 'Détail'     }, amount: 3800, weightGrams: 1000, isCurrentlyActive: true },
-  { id: 'price-2', productId: 'POI-THO-001', packaging: { id: 'pkg-2', label: 'Pro'        }, amount: 3400, weightGrams: 1000, isCurrentlyActive: true },
-  { id: 'price-3', productId: 'POI-THO-001', packaging: { id: 'pkg-3', label: 'Restaurant' }, amount: 3250, weightGrams: 1000, isCurrentlyActive: true },
-  { id: 'price-4', productId: 'POI-THO-001', packaging: { id: 'pkg-4', label: 'Gros'       }, amount: 2980, weightGrams: 1000, isCurrentlyActive: true },
+  { id: 'price-1', productId: 'POI-THO-001', packaging: { id: 'pkg-1', label: 'Détail'     }, amount: 3800, weightGrams: 1000 },
+  { id: 'price-2', productId: 'POI-THO-001', packaging: { id: 'pkg-2', label: 'Pro'        }, amount: 3400, weightGrams: 1000 },
+  { id: 'price-3', productId: 'POI-THO-001', packaging: { id: 'pkg-3', label: 'Restaurant' }, amount: 3250, weightGrams: 1000 },
+  { id: 'price-4', productId: 'POI-THO-001', packaging: { id: 'pkg-4', label: 'Gros'       }, amount: 2980, weightGrams: 1000 },
 ]
 
 async function mockApi(page: Page) {

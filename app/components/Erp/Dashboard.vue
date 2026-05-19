@@ -77,16 +77,6 @@ function fmtWeight(g?: number) {
     ? `${frFR(g / 1000, { maximumFractionDigits: 1 })} kg`
     : `${g} g`
 }
-
-function fmtDate(iso?: string | null) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mi = String(d.getMinutes()).padStart(2, '0')
-  return `${dd}/${mm} ${hh}:${mi}`
-}
 </script>
 
 <template>
@@ -179,7 +169,6 @@ function fmtDate(iso?: string | null) {
             <th class="num">Quantité</th>
             <th class="num">Poids</th>
             <th>Origine</th>
-            <th>Date</th>
           </tr>
         </thead>
         <tbody>
@@ -193,10 +182,9 @@ function fmtDate(iso?: string | null) {
             <td class="num">{{ m.quantity }}</td>
             <td class="num">{{ fmtWeight(m.weightGrams) }}</td>
             <td class="muted">{{ m.description ?? m.origin }}</td>
-            <td class="muted">{{ fmtDate(m.createdAt) }}</td>
           </tr>
           <tr v-if="!filteredMovements.length" class="is-empty">
-            <td colspan="6" class="muted">Aucun mouvement</td>
+            <td colspan="5" class="muted">Aucun mouvement</td>
           </tr>
         </tbody>
       </table>

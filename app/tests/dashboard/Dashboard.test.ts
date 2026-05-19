@@ -155,12 +155,12 @@ describe('ErpDashboard — état API hors-ligne', () => {
 })
 
 describe('ErpDashboard — colonnes du tableau', () => {
-  it('contient les 6 colonnes attendues (sans Saisi par)', async () => {
+  it('contient les 5 colonnes attendues (sans Saisi par ni Date)', async () => {
     const w = await mountSuspended(ErpDashboard)
     await flushPromises()
     const headers = w.findAll('.tbl thead th').map(th => th.text())
     expect(headers).toEqual([
-      'Produit', 'Type', 'Quantité', 'Poids', 'Origine', 'Date',
+      'Produit', 'Type', 'Quantité', 'Poids', 'Origine',
     ])
   })
 })

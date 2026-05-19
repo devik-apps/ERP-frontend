@@ -1229,14 +1229,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Timestamps: {
-            /** Format: date-time */
-            readonly createdAt?: string;
-            /** Format: date-time */
-            readonly updatedAt?: string;
-            /** Format: date-time */
-            readonly deletedAt?: string | null;
-        };
         PaginatedMeta: {
             meta?: {
                 total?: number;
@@ -1266,7 +1258,7 @@ export interface components {
             label?: string;
             description?: string | null;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         CategoryPayload: {
             label: string;
             description?: string | null;
@@ -1280,7 +1272,7 @@ export interface components {
             label?: string;
             description?: string | null;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         PackagingPayload: {
             label: string;
             description?: string | null;
@@ -1296,7 +1288,8 @@ export interface components {
                 label?: string;
             };
             isActive?: boolean;
-            hasVariants?: boolean;
+            /** @description Nombre de produits dérivés (enfants) */
+            readonly variantCount?: number;
             readonly currentStock?: number;
             readonly activePriceCount?: number;
         };
@@ -1308,7 +1301,8 @@ export interface components {
                 label?: string;
             } | null;
             activePrices?: components["schemas"]["ProductPrice"][];
-        } & components["schemas"]["Timestamps"];
+            variants?: components["schemas"]["ProductSummary"][];
+        };
         ProductPayload: {
             label: string;
             description?: string | null;
@@ -1333,10 +1327,9 @@ export interface components {
             validFrom?: string;
             /** Format: date-time */
             validTo?: string | null;
-            readonly isCurrentlyActive?: boolean;
             description?: string | null;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         ProductPricePayload: {
             /** Format: uuid */
             productId: string;
@@ -1358,7 +1351,7 @@ export interface components {
             contact?: string | null;
             description?: string | null;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         SupplierPayload: {
             name: string;
             contact?: string | null;
@@ -1387,7 +1380,7 @@ export interface components {
             readonly origin?: "manual" | "sale" | "transformation";
             description?: string | null;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         StockMovementPayload: {
             /** @enum {string} */
             type: "entry" | "exit";
@@ -1447,7 +1440,7 @@ export interface components {
             readonly totalLossGrams?: number;
             readonly lossRatio?: number;
             isActive?: boolean;
-        } & components["schemas"]["Timestamps"];
+        };
         TransformationPayload: {
             /** Format: date-time */
             transformedAt: string;
@@ -1478,6 +1471,8 @@ export interface components {
             price?: components["schemas"]["ProductPrice"];
             quantity?: number;
             unitPrice?: number;
+            /** @description Poids total réel pour cette ligne (utilisé pour le stock) */
+            totalWeightGrams?: number;
             readonly subtotal?: number;
         };
         SaleSummary: {
@@ -1492,7 +1487,7 @@ export interface components {
         };
         Sale: components["schemas"]["SaleSummary"] & {
             items?: components["schemas"]["SaleItem"][];
-        } & components["schemas"]["Timestamps"];
+        };
         SalePayload: {
             /** Format: date-time */
             saleDate: string;
@@ -1502,7 +1497,16 @@ export interface components {
                 productId: string;
                 /** Format: uuid */
                 productPriceId: string;
-                quantity: number;
+                /**
+                 * @description Multiplicateur du prix.
+                 *     Si omis, calculé comme totalWeightGrams / price.weightGrams.
+                 */
+                quantity?: number;
+                /**
+                 * @description Poids réel pour le déstockage.
+                 *     Si omis, calculé comme quantity * price.weightGrams.
+                 */
+                totalWeightGrams?: number;
             }[];
         };
     };

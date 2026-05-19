@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ERP API
-  version: 1.0.0
+  version: 1.0.3
   description: |
     API REST pour la gestion ERP — catalogue produits, stock, ventes, transformations.
 
@@ -797,22 +797,6 @@ components:
 
   schemas:
 
-    Timestamps:
-      type: object
-      properties:
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-        updatedAt:
-          type: string
-          format: date-time
-          readOnly: true
-        deletedAt:
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
 
     PaginatedMeta:
       type: object
@@ -870,7 +854,7 @@ components:
               nullable: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     CategoryPayload:
       type: object
@@ -903,7 +887,7 @@ components:
               nullable: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     PackagingPayload:
       type: object
@@ -935,8 +919,10 @@ components:
               type: string
         isActive:
           type: boolean
-        hasVariants:
-          type: boolean
+        variantCount:
+          type: integer
+          description: Nombre de produits dérivés (enfants)
+          readOnly: true
         currentStock:
           type: number
           readOnly: true
@@ -965,7 +951,11 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ProductPrice'
-        - $ref: '#/components/schemas/Timestamps'
+            variants:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductSummary'
+
 
     ProductPayload:
       type: object
@@ -1014,15 +1004,12 @@ components:
               type: string
               format: date-time
               nullable: true
-            isCurrentlyActive:
-              type: boolean
-              readOnly: true
             description:
               type: string
               nullable: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     ProductPricePayload:
       type: object
@@ -1072,7 +1059,7 @@ components:
               nullable: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     SupplierPayload:
       type: object
@@ -1133,7 +1120,7 @@ components:
               nullable: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     StockMovementPayload:
       type: object
@@ -1261,7 +1248,7 @@ components:
               readOnly: true
             isActive:
               type: boolean
-        - $ref: '#/components/schemas/Timestamps'
+
 
     TransformationPayload:
       type: object
@@ -1326,6 +1313,9 @@ components:
           type: number
         unitPrice:
           type: number
+        totalWeightGrams:
+          type: number
+          description: Poids total réel pour cette ligne (utilisé pour le stock)
         subtotal:
           type: number
           readOnly: true
@@ -1359,7 +1349,7 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SaleItem'
-        - $ref: '#/components/schemas/Timestamps'
+
 
     SalePayload:
       type: object
@@ -1376,7 +1366,7 @@ components:
           minItems: 1
           items:
             type: object
-            required: [productId, productPriceId, quantity]
+            required: [productId, productPriceId]
             properties:
               productId:
                 type: string
@@ -1387,3 +1377,12 @@ components:
               quantity:
                 type: number
                 minimum: 0.001
+                description: |
+                  Multiplicateur du prix. 
+                  Si omis, calculé comme totalWeightGrams / price.weightGrams.
+              totalWeightGrams:
+                type: number
+                minimum: 1
+                description: |
+                  Poids réel pour le déstockage. 
+                  Si omis, calculé comme quantity * price.weightGrams.
