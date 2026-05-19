@@ -23,7 +23,6 @@ const stockItems = computed(() => [
 const stockRatio = computed(() => {
   const total = stock.value?.totalQuantity ?? 0
   const threshold = 10
-  if (threshold === 0) return 100
   return Math.min(100, Math.round((total / (threshold * 2)) * 100))
 })
 

@@ -6,7 +6,7 @@ import { useApiMutation } from '~/composables/useApiMutation'
 import { generateUUID } from '~/utils/uuid'
 
 interface CategoryPayload { label: string; isActive: boolean }
-interface Category { id: string; label: string; isActive: boolean }
+interface Category { id?: string; label?: string; isActive?: boolean }
 
 const MutationComp = defineComponent({
   setup() {

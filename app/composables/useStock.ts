@@ -6,6 +6,9 @@ import type { components } from '~/api/types.gen'
 type StockMovement = components['schemas']['StockMovement']
 type StockMovementPayload = components['schemas']['StockMovementPayload']
 
+type StockMutationVars = { id: string; payload: StockMovementPayload }
+type StockMutationContext = { previousStock?: unknown; previousProducts?: unknown }
+
 export function useStockMovements() {
   return useApiQuery(
     () => ['stock'],
@@ -16,14 +19,14 @@ export function useStockMovements() {
 export function useCreateStockMovement() {
   const queryClient = useQueryClient()
 
-  return useApiMutation<StockMovement, { id: string; payload: StockMovementPayload }>(
+  return useApiMutation<StockMovement, StockMutationVars>(
     (api, vars) =>
       api.PUT('/stock/{id}', {
         params: { path: { id: vars.id } },
         body: vars.payload,
       }),
     {
-      onMutate: async (vars) => {
+      onMutate: async (vars: StockMutationVars) => {
         await queryClient.cancelQueries({ queryKey: ['stock'] })
         await queryClient.cancelQueries({ queryKey: ['products'] })
 
@@ -62,10 +65,9 @@ export function useCreateStockMovement() {
 
         return { previousStock, previousProducts }
       },
-      onError: (_err, _vars, context) => {
-        const ctx = context as { previousStock?: unknown; previousProducts?: unknown } | undefined
-        if (ctx?.previousStock !== undefined) queryClient.setQueryData(['stock'], ctx.previousStock)
-        if (ctx?.previousProducts !== undefined) queryClient.setQueryData(['products'], ctx.previousProducts)
+      onError: (_err: Error, _vars: StockMutationVars, context: StockMutationContext | undefined) => {
+        if (context?.previousStock !== undefined) queryClient.setQueryData(['stock'], context.previousStock)
+        if (context?.previousProducts !== undefined) queryClient.setQueryData(['products'], context.previousProducts)
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['stock'] })
