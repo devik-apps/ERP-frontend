@@ -68,6 +68,39 @@ describe('ErpProductPriceForm — édition', () => {
   })
 })
 
+describe('ErpProductPriceForm — création inline de conditionnement', () => {
+  it('expose un bouton « + Nouveau » à côté du select', async () => {
+    const w = await mount()
+    expect(w.find('[data-action="new-packaging"]').exists()).toBe(true)
+  })
+
+  it('révèle un champ de saisie au clic sur « + Nouveau »', async () => {
+    const w = await mount()
+    expect(w.find('input[name="new-packaging-label"]').exists()).toBe(false)
+    await w.find('[data-action="new-packaging"]').trigger('click')
+    expect(w.find('input[name="new-packaging-label"]').exists()).toBe(true)
+  })
+
+  it('annule la création et revient au sélecteur', async () => {
+    const w = await mount()
+    await w.find('[data-action="new-packaging"]').trigger('click')
+    await w.find('[data-action="cancel-packaging"]').trigger('click')
+    expect(w.find('input[name="new-packaging-label"]').exists()).toBe(false)
+    expect(w.find('select[name="packaging"]').exists()).toBe(true)
+  })
+
+  it('crée le conditionnement puis revient au sélecteur', async () => {
+    const w = await mount()
+    await w.find('[data-action="new-packaging"]').trigger('click')
+    await w.find('input[name="new-packaging-label"]').setValue('Export')
+    await w.find('[data-action="save-packaging"]').trigger('click')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('input[name="new-packaging-label"]').exists()).toBe(false)
+    expect(w.find('select[name="packaging"]').exists()).toBe(true)
+  })
+})
+
 describe('ErpProductPriceForm — annulation', () => {
   it('émet cancel au clic sur Annuler', async () => {
     const w = await mount()

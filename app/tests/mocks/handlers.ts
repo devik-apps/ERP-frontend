@@ -254,6 +254,21 @@ export const handlers = [
     })
   }),
 
+  http.put('https://api.erp.local/v1/packaging/:id', async ({ request, params }) => {
+    const body = await request.json() as {
+      label: string; description?: string | null; isActive?: boolean
+    }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        label: body.label,
+        description: body.description ?? null,
+        isActive: body.isActive ?? true,
+      },
+      { status: 201 },
+    )
+  }),
+
   http.put('https://api.erp.local/v1/prices/:id', async ({ request, params }) => {
     const body = await request.json() as {
       productId: string; packagingId?: string | null; amount: number;
