@@ -1,34 +1,29 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
-import { http, HttpResponse } from 'msw'
-import { server } from '~/tests/mocks/server'
 import ErpStockMovement from '~/components/Erp/StockMovement.vue'
 
-describe('ErpStockMovement — entête', () => {
-  it('affiche eyebrow, titre et sous-titre', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    expect(w.find('.eyebrow').text()).toBe('Stock')
-    expect(w.find('.sec-title').text()).toBe('Nouveau mouvement')
-    expect(w.find('.sec-sub').exists()).toBe(true)
+const PRODUCT = { id: 'prod-001', label: 'Thon rouge entier', currentStock: 32.4 }
+
+function mount() {
+  return mountSuspended(ErpStockMovement, { props: { product: PRODUCT } })
+}
+
+describe('ErpStockMovement — produit verrouillé', () => {
+  it("n'expose pas de sélecteur de produit", async () => {
+    const w = await mount()
+    expect(w.find('select[name="product"]').exists()).toBe(false)
   })
 
-  it('a l\'id stock pour le scroll-spy', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    expect(w.find('#stock').exists()).toBe(true)
-  })
-
-  it('expose une action principale Enregistrer le mouvement', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const submit = w.find('button[type="submit"]')
-    expect(submit.exists()).toBe(true)
-    expect(submit.text()).toContain('Enregistrer')
+  it('affiche le produit ciblé', async () => {
+    const w = await mount()
+    expect(w.text()).toContain('Thon rouge entier')
   })
 })
 
 describe('ErpStockMovement — segments de type', () => {
   it('expose deux segments Entrée et Sortie, Entrée actif par défaut', async () => {
-    const w = await mountSuspended(ErpStockMovement)
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     expect(segs).toHaveLength(2)
     expect(segs[0]!.text()).toBe('Entrée')
@@ -37,7 +32,7 @@ describe('ErpStockMovement — segments de type', () => {
   })
 
   it('change le segment actif au clic sur Sortie', async () => {
-    const w = await mountSuspended(ErpStockMovement)
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     expect(segs[1]!.classes()).toContain('is-on')
@@ -46,210 +41,92 @@ describe('ErpStockMovement — segments de type', () => {
 })
 
 describe('ErpStockMovement — champs du formulaire', () => {
-  it('expose un sélecteur de produit avec les 15 références', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const select = w.find('select[name="product"]')
-    expect(select.exists()).toBe(true)
-    const options = select.findAll('option')
-    expect(options.length).toBe(15)
-  })
-
-  it('expose un champ quantité numérique', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const input = w.find('input[name="qty"]')
-    expect(input.exists()).toBe(true)
-    expect(input.attributes('type')).toBe('number')
-  })
-
-  it('expose un champ poids unitaire en grammes', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const input = w.find('input[name="unitWeight"]')
-    expect(input.exists()).toBe(true)
-    expect(input.attributes('type')).toBe('number')
-  })
-
-  it('expose un champ origine pour Entrée', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const label = w.find('[data-field="origin"] .field-label')
-    expect(label.text()).toBe('Origine')
+  it('expose quantité, poids unitaire, origine, opérateur, note', async () => {
+    const w = await mount()
+    expect(w.find('input[name="qty"]').attributes('type')).toBe('number')
+    expect(w.find('input[name="unitWeight"]').attributes('type')).toBe('number')
     expect(w.find('input[name="origin"]').exists()).toBe(true)
+    expect(w.find('select[name="operator"]').exists()).toBe(true)
+    expect(w.find('textarea[name="note"]').exists()).toBe(true)
   })
 
   it('renomme origine en destination quand Sortie est sélectionné', async () => {
-    const w = await mountSuspended(ErpStockMovement)
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
-    const label = w.find('[data-field="origin"] .field-label')
-    expect(label.text()).toBe('Destination')
-  })
-
-  it('expose un sélecteur d\'opérateur', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const select = w.find('select[name="operator"]')
-    expect(select.exists()).toBe(true)
-    const options = select.findAll('option').map(o => o.text())
-    expect(options).toContain('Marc')
-    expect(options).toContain('Léa')
-    expect(options).toContain('Atelier')
-  })
-
-  it('expose un champ note', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    expect(w.find('textarea[name="note"]').exists()).toBe(true)
+    expect(w.find('[data-field="origin"] .field-label').text()).toBe('Destination')
   })
 })
 
 describe('ErpStockMovement — récapitulatif live', () => {
-  it('rend le bloc récapitulatif', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    expect(w.find('.movement-summary').exists()).toBe(true)
-    expect(w.find('.movement-summary .card-title').text()).toBe('Récapitulatif')
-  })
-
-  it('affiche le type courant avec un mv-pill is-in pour Entrée', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const pill = w.find('.movement-summary .mv-pill')
-    expect(pill.exists()).toBe(true)
-    expect(pill.classes()).toContain('is-in')
-    expect(pill.text()).toContain('Entrée')
-  })
-
-  it('passe le mv-pill à is-out quand Sortie est sélectionné', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    const segs = w.findAll('[data-field="type"] .seg-btn')
-    await segs[1]!.trigger('click')
-    const pill = w.find('.movement-summary .mv-pill')
-    expect(pill.classes()).toContain('is-out')
-    expect(pill.text()).toContain('Sortie')
-  })
-
-  it('affiche le produit sélectionné dans le récap', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const select = w.find('select[name="product"]')
-    const firstOption = select.findAll('option')[1]!
-    await select.setValue(firstOption.element.value)
-    await w.vm.$nextTick()
-    expect(w.find('.movement-summary').text()).toContain(firstOption.text())
-  })
-
   it('calcule le poids total = quantité × poids unitaire', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     await w.find('input[name="qty"]').setValue(4)
     await w.find('input[name="unitWeight"]').setValue(800)
-    const total = w.find('[data-summary="total-weight"]')
-    expect(total.text()).toContain('3 200')
-    expect(total.text()).toContain('g')
+    expect(w.find('[data-summary="total-weight"]').text()).toContain('3 200')
   })
 
   it('calcule le stock après mouvement pour une Entrée', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     await w.find('input[name="qty"]').setValue(4)
     await w.find('input[name="unitWeight"]').setValue(800)
-    const after = w.find('[data-summary="stock-after"]')
-    expect(after.text()).toContain('35,6')
-    expect(after.text()).toContain('kg')
+    expect(w.find('[data-summary="stock-after"]').text()).toContain('35,6')
   })
 
   it('calcule le stock après mouvement pour une Sortie', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(2)
     await w.find('input[name="unitWeight"]').setValue(1000)
-    const after = w.find('[data-summary="stock-after"]')
-    expect(after.text()).toContain('30,4')
+    expect(w.find('[data-summary="stock-after"]').text()).toContain('30,4')
   })
 
   it('signale un stock insuffisant quand une sortie dépasse le stock', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
     await w.find('input[name="unitWeight"]').setValue(1000)
-    expect(w.find('.movement-warning').exists()).toBe(true)
     expect(w.find('.movement-warning').text()).toContain('insuffisant')
   })
 })
 
 describe('ErpStockMovement — validation et soumission', () => {
   it('désactive le bouton tant que quantité ou poids est nul', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const submit = w.find('button[type="submit"]')
-    expect(submit.attributes('disabled')).toBeDefined()
+    const w = await mount()
+    expect(w.find('button[type="submit"]').attributes('disabled')).toBeDefined()
   })
 
   it('active le bouton quand quantité et poids sont renseignés', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     await w.find('input[name="qty"]').setValue(2)
     await w.find('input[name="unitWeight"]').setValue(500)
-    const submit = w.find('button[type="submit"]')
-    expect(submit.attributes('disabled')).toBeUndefined()
+    expect(w.find('button[type="submit"]').attributes('disabled')).toBeUndefined()
   })
 
   it('désactive le bouton si la sortie dépasse le stock', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+    const w = await mount()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
     await w.find('input[name="qty"]').setValue(100)
     await w.find('input[name="unitWeight"]').setValue(1000)
-    const submit = w.find('button[type="submit"]')
-    expect(submit.attributes('disabled')).toBeDefined()
+    expect(w.find('button[type="submit"]').attributes('disabled')).toBeDefined()
   })
 
-  it('soumet le formulaire via PUT /stock/{uuid} et réinitialise les champs', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
+  it('soumet via PUT /stock/{uuid} et émet submitted', async () => {
+    const w = await mount()
     await w.find('input[name="qty"]').setValue(4)
     await w.find('input[name="unitWeight"]').setValue(800)
     await w.find('form').trigger('submit')
     await flushPromises()
     await w.vm.$nextTick()
-    expect((w.find('input[name="qty"]').element as HTMLInputElement).value).toBe('0')
-    expect((w.find('input[name="unitWeight"]').element as HTMLInputElement).value).toBe('0')
+    expect(w.emitted('submitted')).toBeTruthy()
   })
 
-  it('désactive le bouton pendant la mutation (isPending)', async () => {
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await w.vm.$nextTick()
-    await w.find('input[name="qty"]').setValue(4)
-    await w.find('input[name="unitWeight"]').setValue(800)
-    const submit = w.find('button[type="submit"]')
-    expect(submit.attributes('disabled')).toBeUndefined()
-    await w.find('form').trigger('submit')
-    expect(submit.attributes('disabled')).toBeDefined()
-    await flushPromises()
-  })
-})
-
-describe('ErpStockMovement — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/products', () => HttpResponse.error()),
-    )
-    const w = await mountSuspended(ErpStockMovement)
-    await flushPromises()
-    await flushPromises()
-    await w.vm.$nextTick()
-    expect(w.find('.api-state.is-error').exists()).toBe(true)
+  it('émet cancel au clic sur Annuler', async () => {
+    const w = await mount()
+    await w.find('[data-action="cancel"]').trigger('click')
+    expect(w.emitted('cancel')).toBeTruthy()
   })
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next'
+import { Plus, Search } from 'lucide-vue-next'
 import { useCategories, useProducts, productStatus, type ProductStatus } from '~/composables/useProducts'
 
 type StatusFilter = 'Tous' | ProductStatus
@@ -14,6 +14,7 @@ const hasApiError = computed(() => categoriesQ.isError.value || productsQ.isErro
 const search = ref('')
 const activeCategory = ref('Toutes')
 const activeStatus = ref<StatusFilter>('Tous')
+const createOpen = ref(false)
 
 const categoryChips = computed(() => ['Toutes', ...(categoriesData.value?.data?.map(c => c.label ?? '') ?? [])])
 const statusChips: StatusFilter[] = ['Tous', 'Actif', 'Stock bas', 'Inactif']
@@ -51,7 +52,9 @@ function stockFr(n: number) {
         <div class="sec-sub">{{ totalCount }} références — {{ filtered.length }} affichées</div>
       </div>
       <div class="sec-right">
-        <button class="btn btn-primary">Nouveau produit</button>
+        <button class="btn btn-primary" data-action="new-product" @click="createOpen = true">
+          <Plus :size="14" :stroke-width="1.5" /> Nouveau produit
+        </button>
       </div>
     </header>
 
@@ -125,5 +128,9 @@ function stockFr(n: number) {
     <div v-else class="card catalog-empty">
       Aucun produit ne correspond à votre recherche.
     </div>
+
+    <UiModal :open="createOpen" title="Nouveau produit" @close="createOpen = false">
+      <ErpProductForm @submitted="createOpen = false" @cancel="createOpen = false" />
+    </UiModal>
   </section>
 </template>

@@ -116,6 +116,29 @@ describe('ErpProductDetail — tableau des prix', () => {
   })
 })
 
+describe('ErpProductDetail — modales mouvement et édition', () => {
+  it('ouvre la modale de mouvement au clic sur Mouvement', async () => {
+    const w = await mount()
+    expect(w.find('.modal-backdrop').exists()).toBe(false)
+    await w.find('[data-action="new-movement"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    expect(w.find('.modal-title').text()).toContain('Mouvement')
+    expect(w.find('input[name="qty"]').exists()).toBe(true)
+    expect(w.find('select[name="product"]').exists()).toBe(false)
+  })
+
+  it('ouvre la modale d\'édition au clic sur Éditer, préremplie', async () => {
+    const w = await mount()
+    await w.find('[data-action="edit-product"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    expect(w.find('.modal-title').text()).toBe('Éditer le produit')
+    const input = w.find('input[name="label"]').element as HTMLInputElement
+    expect(input.value).toBe('Thon rouge entier')
+  })
+})
+
 describe('ErpProductDetail — état API hors-ligne', () => {
   it('affiche un bandeau "API indisponible" quand /products/:id échoue', async () => {
     server.use(

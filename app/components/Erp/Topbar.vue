@@ -9,7 +9,6 @@ const routeLabels: Record<string, string> = {
   '/products':       'Produits',
   '/stock':          'Stock',
   '/sales':          'Ventes',
-  '/transformations': 'Transformations',
   '/suppliers':      'Fournisseurs',
 }
 

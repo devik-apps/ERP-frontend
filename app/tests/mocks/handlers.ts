@@ -155,6 +155,25 @@ export const handlers = [
     return HttpResponse.json(MOCK_PRODUCT_DETAIL)
   }),
 
+  http.put('https://api.erp.local/v1/products/:id', async ({ request, params }) => {
+    const body = await request.json() as {
+      label: string; description?: string | null; categoryId: string;
+      parentId?: string | null; isActive: boolean
+    }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        label: body.label,
+        description: body.description ?? null,
+        category: { id: body.categoryId, label: '' },
+        isActive: body.isActive,
+        currentStock: 0,
+        activePriceCount: 0,
+      },
+      { status: 201 },
+    )
+  }),
+
   http.get('https://api.erp.local/v1/sales', () => {
     return HttpResponse.json({
       data: MOCK_SALES,

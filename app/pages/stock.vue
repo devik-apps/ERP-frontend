@@ -3,5 +3,5 @@ useHead({ title: 'Stock — Poissonnerie du Vieux Port' })
 </script>
 
 <template>
-  <ErpStockMovement />
+  <ErpStockOverview />
 </template>

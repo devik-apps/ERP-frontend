@@ -129,6 +129,29 @@ describe('ErpCatalog — grille de cards', () => {
   })
 })
 
+describe('ErpCatalog — création produit', () => {
+  it('expose un bouton "Nouveau produit"', async () => {
+    const w = await mount()
+    const btn = w.find('[data-action="new-product"]')
+    expect(btn.exists()).toBe(true)
+    expect(btn.text()).toContain('Nouveau produit')
+  })
+
+  it('la modale est fermée au démarrage', async () => {
+    const w = await mount()
+    expect(w.find('.modal-backdrop').exists()).toBe(false)
+  })
+
+  it('ouvre la modale au clic sur Nouveau produit', async () => {
+    const w = await mount()
+    await w.find('[data-action="new-product"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    expect(w.find('.modal-title').text()).toBe('Nouveau produit')
+    expect(w.find('input[name="label"]').exists()).toBe(true)
+  })
+})
+
 describe('ErpCatalog — état API hors-ligne', () => {
   it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
     server.use(

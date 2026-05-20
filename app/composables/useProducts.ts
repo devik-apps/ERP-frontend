@@ -1,5 +1,12 @@
 import { toValue, type MaybeRefOrGetter } from 'vue'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useApiQuery } from './useApiQuery'
+import { useApiMutation } from './useApiMutation'
+import type { components } from '~/api/types.gen'
+
+type Product = components['schemas']['Product']
+type ProductPayload = components['schemas']['ProductPayload']
+type UpsertProductVars = { id: string; payload: ProductPayload }
 
 export type ProductStatus = 'Actif' | 'Stock bas' | 'Inactif'
 
@@ -43,5 +50,23 @@ export function useProductPrices(id: MaybeRefOrGetter<string>) {
   return useApiQuery(
     () => ['product-prices', toValue(id)],
     (api) => api.GET('/products/{id}/prices', { params: { path: { id: toValue(id) } } }),
+  )
+}
+
+export function useUpsertProduct() {
+  const queryClient = useQueryClient()
+
+  return useApiMutation<Product, UpsertProductVars>(
+    (api, vars) =>
+      api.PUT('/products/{id}', {
+        params: { path: { id: vars.id } },
+        body: vars.payload,
+      }),
+    {
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['products'] })
+        queryClient.invalidateQueries({ queryKey: ['product'] })
+      },
+    },
   )
 }

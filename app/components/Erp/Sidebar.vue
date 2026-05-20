@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   LayoutDashboard, Grid2x2, Layers,
-  TrendingUp, Truck, Users,
+  TrendingUp, Users,
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -12,7 +12,6 @@ const navItems = [
   { id: 'catalog',    label: 'Produits',         icon: Grid2x2,         to: '/products' },
   { id: 'stock',      label: 'Stock',             icon: Layers,          to: '/stock' },
   { id: 'sales',      label: 'Ventes',           icon: TrendingUp,      to: '/sales' },
-  { id: 'transform',  label: 'Transformations',  icon: Truck,           to: '/transformations' },
   { id: 'suppliers',  label: 'Fournisseurs',     icon: Users,           to: '/suppliers' },
 ]
 

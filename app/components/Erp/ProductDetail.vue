@@ -13,6 +13,15 @@ const { data: pricesData } = pricesQ
 
 const hasApiError = computed(() => productQ.isError.value || stockQ.isError.value || pricesQ.isError.value)
 
+const movementOpen = ref(false)
+const editOpen = ref(false)
+
+const movementProduct = computed(() => ({
+  id: product.value?.id ?? props.id,
+  label: product.value?.label ?? '',
+  currentStock: stock.value?.totalQuantity ?? product.value?.currentStock ?? 0,
+}))
+
 const prices = computed(() => pricesData.value?.data ?? [])
 
 const stockItems = computed(() => [
@@ -53,10 +62,10 @@ function badgeClass() {
         <div class="sec-sub">{{ product?.id }} — {{ product?.category?.label }}</div>
       </div>
       <div class="sec-right">
-        <button class="btn btn-primary">
+        <button class="btn btn-primary" data-action="new-movement" @click="movementOpen = true">
           <Plus :size="14" :stroke-width="1.5" /> Mouvement
         </button>
-        <button class="btn">
+        <button class="btn" data-action="edit-product" @click="editOpen = true">
           <Pencil :size="14" :stroke-width="1.5" /> Éditer
         </button>
       </div>
@@ -151,5 +160,29 @@ function badgeClass() {
         </tbody>
       </table>
     </div>
+
+    <UiModal
+      :open="movementOpen"
+      :title="`Mouvement — ${product?.label ?? ''}`"
+      @close="movementOpen = false"
+    >
+      <ErpStockMovement
+        :product="movementProduct"
+        @submitted="movementOpen = false"
+        @cancel="movementOpen = false"
+      />
+    </UiModal>
+
+    <UiModal
+      :open="editOpen"
+      title="Éditer le produit"
+      @close="editOpen = false"
+    >
+      <ErpProductForm
+        :product="product ?? undefined"
+        @submitted="editOpen = false"
+        @cancel="editOpen = false"
+      />
+    </UiModal>
   </section>
 </template>

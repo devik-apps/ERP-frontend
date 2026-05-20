@@ -8,6 +8,7 @@ import {
   useProduct,
   useProductStock,
   useProductPrices,
+  useUpsertProduct,
   productStatus,
 } from '~/composables/useProducts'
 
@@ -122,5 +123,40 @@ describe('productStatus', () => {
 
   it('retourne Actif si stock au-dessus du seuil', () => {
     expect(productStatus({ isActive: true, currentStock: 5 })).toBe('Actif')
+  })
+})
+
+const UpsertComp = defineComponent({
+  setup() {
+    const mut = useUpsertProduct()
+    return {
+      isPending: mut.isPending,
+      isSuccess: mut.isSuccess,
+      data: mut.data,
+      mutate: mut.mutate,
+    }
+  },
+  template: `
+    <div>
+      <span class="status">{{ isPending ? 'pending' : isSuccess ? 'success' : 'idle' }}</span>
+      <span class="product-id">{{ data?.id ?? '' }}</span>
+      <button @click="mutate({ id: 'new-prod-1', payload: { label: 'Nouveau', categoryId: 'cat-1', isActive: true } })">go</button>
+    </div>
+  `,
+})
+
+describe('useUpsertProduct', () => {
+  it('démarre à l\'état idle', async () => {
+    const w = await mountSuspended(UpsertComp)
+    expect(w.find('.status').text()).toBe('idle')
+  })
+
+  it('exécute la mutation et retourne le produit créé', async () => {
+    const w = await mountSuspended(UpsertComp)
+    await w.find('button').trigger('click')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.status').text()).toBe('success')
+    expect(w.find('.product-id').text()).toBe('new-prod-1')
   })
 })
