@@ -241,4 +241,41 @@ export const handlers = [
       { status: 201 },
     )
   }),
+
+  http.get('https://api.erp.local/v1/packaging', () => {
+    return HttpResponse.json({
+      data: [
+        { id: 'pkg-1', label: 'Détail',     isActive: true },
+        { id: 'pkg-2', label: 'Pro',        isActive: true },
+        { id: 'pkg-3', label: 'Restaurant', isActive: true },
+        { id: 'pkg-4', label: 'Gros',       isActive: true },
+      ],
+      meta: { total: 4, page: 1, limit: 50, totalPages: 1 },
+    })
+  }),
+
+  http.put('https://api.erp.local/v1/prices/:id', async ({ request, params }) => {
+    const body = await request.json() as {
+      productId: string; packagingId?: string | null; amount: number;
+      weightGrams: number; validFrom: string; description?: string | null; isActive?: boolean
+    }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        productId: body.productId,
+        packaging: body.packagingId ? { id: body.packagingId, label: '' } : undefined,
+        amount: body.amount,
+        weightGrams: body.weightGrams,
+        validFrom: body.validFrom,
+        validTo: null,
+        description: body.description ?? null,
+        isActive: body.isActive ?? true,
+      },
+      { status: 201 },
+    )
+  }),
+
+  http.delete('https://api.erp.local/v1/prices/:id', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
 ]

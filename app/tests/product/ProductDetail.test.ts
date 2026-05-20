@@ -95,10 +95,10 @@ describe('ErpProductDetail — tableau des prix', () => {
     expect(table.find('table.tbl').exists()).toBe(true)
   })
 
-  it('expose les colonnes Conditionnement et Prix', async () => {
+  it('expose les colonnes Conditionnement, Prix et Actions', async () => {
     const w = await mount()
     const headers = w.findAll('.product-prices thead th').map(t => t.text())
-    expect(headers).toEqual(['Conditionnement', 'Prix'])
+    expect(headers).toEqual(['Conditionnement', 'Prix', 'Actions'])
   })
 
   it('rend 4 lignes de prix', async () => {
@@ -113,6 +113,47 @@ describe('ErpProductDetail — tableau des prix', () => {
     const cells = first.findAll('td')
     expect(cells[0]!.text()).toBe('Détail')
     expect(cells[1]!.text()).toContain('€/kg')
+  })
+})
+
+describe('ErpProductDetail — gestion des prix', () => {
+  it('expose un bouton « Ajouter un prix » dans l\'entête du tableau', async () => {
+    const w = await mount()
+    const btn = w.find('[data-action="new-price"]')
+    expect(btn.exists()).toBe(true)
+  })
+
+  it('ouvre la modale de création au clic sur Ajouter un prix', async () => {
+    const w = await mount()
+    await w.find('[data-action="new-price"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    expect(w.find('input[name="amount"]').exists()).toBe(true)
+  })
+
+  it('chaque ligne expose une action Éditer et Supprimer', async () => {
+    const w = await mount()
+    const rows = w.findAll('.product-prices tbody tr')
+    const firstRow = rows[0]!
+    expect(firstRow.find('[data-action="edit-price"]').exists()).toBe(true)
+    expect(firstRow.find('[data-action="delete-price"]').exists()).toBe(true)
+  })
+
+  it('ouvre la modale d\'édition avec les valeurs préremplies', async () => {
+    const w = await mount()
+    await w.find('.product-prices tbody tr [data-action="edit-price"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    const amountInput = w.find('input[name="amount"]').element as HTMLInputElement
+    expect(amountInput.value).toBe('38')
+  })
+
+  it('ouvre la confirmation de suppression', async () => {
+    const w = await mount()
+    await w.find('.product-prices tbody tr [data-action="delete-price"]').trigger('click')
+    await flushPromises()
+    expect(w.find('.modal-backdrop').exists()).toBe(true)
+    expect(w.find('[data-action="confirm-delete"]').exists()).toBe(true)
   })
 })
 

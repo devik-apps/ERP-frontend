@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { Pencil, Plus } from 'lucide-vue-next'
-import { useProduct, useProductStock, useProductPrices, productStatus } from '~/composables/useProducts'
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
+import type { ProductPrice } from '@tsanta22kyle/erp-client'
+import {
+  useProduct,
+  useProductStock,
+  useProductPrices,
+  useDeleteProductPrice,
+  productStatus,
+} from '~/composables/useProducts'
 
 const props = defineProps<{ id: string }>()
 
@@ -15,6 +22,43 @@ const hasApiError = computed(() => productQ.isError.value || stockQ.isError.valu
 
 const movementOpen = ref(false)
 const editOpen = ref(false)
+const priceFormOpen = ref(false)
+const editingPrice = ref<ProductPrice | undefined>(undefined)
+const priceToDelete = ref<ProductPrice | null>(null)
+
+const deletePrice = useDeleteProductPrice()
+
+function openCreatePrice() {
+  editingPrice.value = undefined
+  priceFormOpen.value = true
+}
+
+function openEditPrice(p: ProductPrice) {
+  editingPrice.value = p
+  priceFormOpen.value = true
+}
+
+function closePriceForm() {
+  priceFormOpen.value = false
+  editingPrice.value = undefined
+}
+
+function askDelete(p: ProductPrice) {
+  priceToDelete.value = p
+}
+
+function cancelDelete() {
+  priceToDelete.value = null
+}
+
+function confirmDelete() {
+  const target = priceToDelete.value
+  if (!target?.id) return
+  deletePrice.mutate(
+    { id: target.id, productId: props.id },
+    { onSuccess: () => { priceToDelete.value = null } },
+  )
+}
 
 const movementProduct = computed(() => ({
   id: product.value?.id ?? props.id,
@@ -139,7 +183,12 @@ function badgeClass() {
       <div class="table-head">
         <div>
           <div class="card-title">Tableau des prix</div>
-          <div class="card-sub">{{ prices.length }} tarifs actifs</div>
+          <div class="card-sub">{{ prices.length }} tarif{{ prices.length > 1 ? 's' : '' }} actif{{ prices.length > 1 ? 's' : '' }}</div>
+        </div>
+        <div class="table-actions">
+          <button class="btn btn-sm btn-primary" data-action="new-price" @click="openCreatePrice">
+            <Plus :size="13" :stroke-width="1.5" /> Ajouter un prix
+          </button>
         </div>
       </div>
       <table class="tbl">
@@ -147,15 +196,38 @@ function badgeClass() {
           <tr>
             <th>Conditionnement</th>
             <th class="num">Prix</th>
+            <th class="num">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="row in prices" :key="row.id">
             <td class="strong">{{ row.packaging?.label }}</td>
             <td class="num">{{ formatPrice(row.amount ?? 0, row.weightGrams ?? 1000) }}</td>
+            <td class="num">
+              <div class="row-actions">
+                <button
+                  type="button"
+                  class="icon-btn"
+                  data-action="edit-price"
+                  aria-label="Éditer le prix"
+                  @click="openEditPrice(row)"
+                >
+                  <Pencil :size="13" :stroke-width="1.5" />
+                </button>
+                <button
+                  type="button"
+                  class="icon-btn is-danger"
+                  data-action="delete-price"
+                  aria-label="Supprimer le prix"
+                  @click="askDelete(row)"
+                >
+                  <Trash2 :size="13" :stroke-width="1.5" />
+                </button>
+              </div>
+            </td>
           </tr>
           <tr v-if="!prices.length" class="is-empty">
-            <td colspan="2" class="muted">Aucun tarif</td>
+            <td colspan="3" class="muted">Aucun tarif</td>
           </tr>
         </tbody>
       </table>
@@ -183,6 +255,51 @@ function badgeClass() {
         @submitted="editOpen = false"
         @cancel="editOpen = false"
       />
+    </UiModal>
+
+    <UiModal
+      :open="priceFormOpen"
+      :title="editingPrice ? 'Éditer le prix' : 'Ajouter un prix'"
+      @close="closePriceForm"
+    >
+      <ErpProductPriceForm
+        :product-id="id"
+        :price="editingPrice"
+        @submitted="closePriceForm"
+        @cancel="closePriceForm"
+      />
+    </UiModal>
+
+    <UiModal
+      :open="!!priceToDelete"
+      title="Supprimer le prix"
+      @close="cancelDelete"
+    >
+      <div class="modal-form">
+        <p>
+          Supprimer le tarif
+          <strong>{{ priceToDelete?.packaging?.label }}</strong>
+          ({{ formatPrice(priceToDelete?.amount ?? 0, priceToDelete?.weightGrams ?? 1000) }}) ?
+          Cette action est définitive.
+        </p>
+        <div v-if="deletePrice.isError.value" class="modal-error" role="alert">
+          Impossible de supprimer le prix.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-action="cancel-delete" @click="cancelDelete">
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            data-action="confirm-delete"
+            :disabled="deletePrice.isPending.value"
+            @click="confirmDelete"
+          >
+            <Trash2 :size="14" :stroke-width="1.5" /> Supprimer
+          </button>
+        </div>
+      </div>
     </UiModal>
   </section>
 </template>
