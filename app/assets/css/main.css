@@ -358,6 +358,48 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 11.5px;
 }
 
+.btn-danger {
+  background: #c84a3a;
+  color: #fff;
+  border-color: #c84a3a;
+}
+
+.btn-danger:hover {
+  background: #a93628;
+  border-color: #a93628;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  border: 0.5px solid transparent;
+  background: transparent;
+  color: var(--ink-3);
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+
+.icon-btn:hover {
+  background: var(--slate-tint);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.icon-btn.is-danger:hover {
+  background: rgba(200, 74, 58, 0.1);
+  border-color: rgba(200, 74, 58, 0.35);
+  color: #c84a3a;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
 .btn-row {
   display: flex;
   gap: 8px;

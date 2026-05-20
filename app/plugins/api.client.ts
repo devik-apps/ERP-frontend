@@ -1,6 +1,7 @@
 import {
   Configuration,
   CategoriesApi,
+  PackagingApi,
   ProductsApi,
   PricesApi,
   StockApi,
@@ -12,6 +13,7 @@ import {
 export type ErpApi = {
   configuration: Configuration
   categories: CategoriesApi
+  packaging: PackagingApi
   products: ProductsApi
   prices: PricesApi
   stock: StockApi
@@ -30,6 +32,7 @@ export default defineNuxtPlugin(() => {
   const api: ErpApi = {
     configuration,
     categories: new CategoriesApi(configuration),
+    packaging: new PackagingApi(configuration),
     products: new ProductsApi(configuration),
     prices: new PricesApi(configuration),
     stock: new StockApi(configuration),

@@ -9,6 +9,8 @@ import {
   useProductStock,
   useProductPrices,
   useUpsertProduct,
+  useUpsertProductPrice,
+  useDeleteProductPrice,
   productStatus,
 } from '~/composables/useProducts'
 
@@ -158,5 +160,62 @@ describe('useUpsertProduct', () => {
     await w.vm.$nextTick()
     expect(w.find('.status').text()).toBe('success')
     expect(w.find('.product-id').text()).toBe('new-prod-1')
+  })
+})
+
+const UpsertPriceComp = defineComponent({
+  setup() {
+    const mut = useUpsertProductPrice()
+    return {
+      isPending: mut.isPending,
+      isSuccess: mut.isSuccess,
+      data: mut.data,
+      mutate: mut.mutate,
+    }
+  },
+  template: `
+    <div>
+      <span class="status">{{ isPending ? 'pending' : isSuccess ? 'success' : 'idle' }}</span>
+      <span class="price-id">{{ data?.id ?? '' }}</span>
+      <button @click="mutate({ id: 'price-new-1', payload: { productId: 'prod-001', packagingId: 'pkg-1', amount: 3800, weightGrams: 1000, validFrom: new Date() } })">go</button>
+    </div>
+  `,
+})
+
+describe('useUpsertProductPrice', () => {
+  it('exécute la mutation et retourne le prix créé', async () => {
+    const w = await mountSuspended(UpsertPriceComp)
+    await w.find('button').trigger('click')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.status').text()).toBe('success')
+    expect(w.find('.price-id').text()).toBe('price-new-1')
+  })
+})
+
+const DeletePriceComp = defineComponent({
+  setup() {
+    const mut = useDeleteProductPrice()
+    return {
+      isPending: mut.isPending,
+      isSuccess: mut.isSuccess,
+      mutate: mut.mutate,
+    }
+  },
+  template: `
+    <div>
+      <span class="status">{{ isPending ? 'pending' : isSuccess ? 'success' : 'idle' }}</span>
+      <button @click="mutate({ id: 'price-1', productId: 'prod-001' })">go</button>
+    </div>
+  `,
+})
+
+describe('useDeleteProductPrice', () => {
+  it('exécute la suppression et passe en success', async () => {
+    const w = await mountSuspended(DeletePriceComp)
+    await w.find('button').trigger('click')
+    await flushPromises()
+    await w.vm.$nextTick()
+    expect(w.find('.status').text()).toBe('success')
   })
 })

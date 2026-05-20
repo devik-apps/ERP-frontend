@@ -4,6 +4,8 @@ import type {
   CategoriesGet200Response,
   Product,
   ProductPayload,
+  ProductPrice,
+  ProductPricePayload,
   ProductsGet200Response,
   ProductStockSummary,
   ProductsIdPricesGet200Response,
@@ -12,6 +14,8 @@ import { rawJson, useApiQuery } from './useApiQuery'
 import { useApiMutation } from './useApiMutation'
 
 type UpsertProductVars = { id: string; payload: ProductPayload }
+type UpsertProductPriceVars = { id: string; payload: ProductPricePayload }
+type DeleteProductPriceVars = { id: string; productId: string }
 
 export type ProductStatus = 'Actif' | 'Stock bas' | 'Inactif'
 
@@ -70,6 +74,39 @@ export function useUpsertProduct() {
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['product'] })
+      },
+    },
+  )
+}
+
+export function useUpsertProductPrice() {
+  const queryClient = useQueryClient()
+
+  return useApiMutation<ProductPrice, UpsertProductPriceVars>(
+    (api, vars) =>
+      rawJson(
+        api.prices.pricesIdPutRaw({ id: vars.id, productPricePayload: vars.payload }),
+      ),
+    {
+      onSettled: (_data: ProductPrice | undefined, _err: Error | null, vars: UpsertProductPriceVars) => {
+        queryClient.invalidateQueries({ queryKey: ['product-prices', vars.payload.productId] })
+        queryClient.invalidateQueries({ queryKey: ['product', vars.payload.productId] })
+      },
+    },
+  )
+}
+
+export function useDeleteProductPrice() {
+  const queryClient = useQueryClient()
+
+  return useApiMutation<void, DeleteProductPriceVars>(
+    async (api, vars) => {
+      await api.prices.pricesIdDelete({ id: vars.id })
+    },
+    {
+      onSettled: (_data: void, _err: Error | null, vars: DeleteProductPriceVars) => {
+        queryClient.invalidateQueries({ queryKey: ['product-prices', vars.productId] })
+        queryClient.invalidateQueries({ queryKey: ['product', vars.productId] })
       },
     },
   )
