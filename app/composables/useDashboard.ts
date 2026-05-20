@@ -1,15 +1,19 @@
-import { useApiQuery } from './useApiQuery'
+import type {
+  StockSummaryGet200Response,
+  TransformationsGet200Response,
+} from '@tsanta22kyle/erp-client'
+import { rawJson, useApiQuery } from './useApiQuery'
 
 export function useStockSummary() {
-  return useApiQuery(
+  return useApiQuery<StockSummaryGet200Response>(
     () => ['stock', 'summary'],
-    (api) => api.GET('/stock/summary'),
+    (api) => rawJson(api.stock.stockSummaryGetRaw({})),
   )
 }
 
 export function useTransformationCount() {
-  return useApiQuery(
+  return useApiQuery<TransformationsGet200Response>(
     () => ['transformations'],
-    (api) => api.GET('/transformations', { params: { query: { limit: 1 } } }),
+    (api) => rawJson(api.transformations.transformationsGetRaw({ limit: 1 })),
   )
 }

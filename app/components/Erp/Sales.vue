@@ -78,7 +78,7 @@ function statusClass(status?: string): string {
   return 'is-inactive'
 }
 
-function fmtDate(iso?: string): string {
+function fmtDate(iso?: string | Date): string {
   if (!iso) return '—'
   const d = new Date(iso)
   const dd = String(d.getUTCDate()).padStart(2, '0')

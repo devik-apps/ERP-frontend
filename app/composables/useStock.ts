@@ -1,18 +1,19 @@
 import { useQueryClient } from '@tanstack/vue-query'
-import { useApiQuery } from './useApiQuery'
+import type {
+  StockGet200Response,
+  StockMovement,
+  StockMovementPayload,
+} from '@tsanta22kyle/erp-client'
+import { rawJson, useApiQuery } from './useApiQuery'
 import { useApiMutation } from './useApiMutation'
-import type { components } from '~/api/types.gen'
-
-type StockMovement = components['schemas']['StockMovement']
-type StockMovementPayload = components['schemas']['StockMovementPayload']
 
 type StockMutationVars = { id: string; payload: StockMovementPayload }
 type StockMutationContext = { previousStock?: unknown; previousProducts?: unknown }
 
 export function useStockMovements() {
-  return useApiQuery(
+  return useApiQuery<StockGet200Response>(
     () => ['stock'],
-    (api) => api.GET('/stock', { params: { query: { limit: 50 } } }),
+    (api) => rawJson(api.stock.stockGetRaw({ limit: 50 })),
   )
 }
 
@@ -21,10 +22,9 @@ export function useCreateStockMovement() {
 
   return useApiMutation<StockMovement, StockMutationVars>(
     (api, vars) =>
-      api.PUT('/stock/{id}', {
-        params: { path: { id: vars.id } },
-        body: vars.payload,
-      }),
+      rawJson(
+        api.stock.stockIdPutRaw({ id: vars.id, stockMovementPayload: vars.payload }),
+      ),
     {
       onMutate: async (vars: StockMutationVars) => {
         await queryClient.cancelQueries({ queryKey: ['stock'] })

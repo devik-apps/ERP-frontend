@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, ref } from 'vue'
 import { flushPromises } from '@vue/test-utils'
-import { useApiQuery } from '~/composables/useApiQuery'
+import { rawJson, useApiQuery } from '~/composables/useApiQuery'
 
 const CategoriesComp = defineComponent({
   setup() {
     const query = useApiQuery(
       () => ['categories'],
-      (api) => api.GET('/categories', {}),
+      (api) => rawJson(api.categories.categoriesGetRaw({})),
     )
     return {
       isPending: query.isPending,

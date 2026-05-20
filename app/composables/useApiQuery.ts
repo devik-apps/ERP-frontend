@@ -1,24 +1,28 @@
 import { useQuery, type UseQueryOptions } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import createClient from 'openapi-fetch'
-import type { paths } from '~/api/types.gen'
+import type { ApiResponse } from '@tsanta22kyle/erp-client'
+import type { ErpApi } from '~/plugins/api.client'
 
-type ApiClient = ReturnType<typeof createClient<paths>>
+/**
+ * Récupère la charge JSON brute renvoyée par le serveur, sans passer par les
+ * convertisseurs FromJSON du SDK (qui suppriment les champs non décrits dans
+ * l'OpenAPI — segment, top, status… utilisés côté UI uniquement).
+ */
+export async function rawJson<T>(p: Promise<ApiResponse<T>>): Promise<T> {
+  const res = await p
+  return (await res.raw.json()) as T
+}
 
 export function useApiQuery<T>(
   queryKey: MaybeRefOrGetter<unknown[]>,
-  queryFn: (api: ApiClient) => Promise<{ data?: T; error?: unknown }>,
+  queryFn: (api: ErpApi) => Promise<T>,
   options?: Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'>,
 ) {
   const { $api } = useNuxtApp()
 
   return useQuery<T>({
     queryKey: computed(() => toValue(queryKey)),
-    queryFn: async () => {
-      const { data, error } = await queryFn($api as ApiClient)
-      if (error) throw error
-      return data as T
-    },
+    queryFn: () => queryFn($api as ErpApi),
     ...options,
   })
 }

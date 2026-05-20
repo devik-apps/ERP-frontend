@@ -48,7 +48,7 @@ describe('useCreateSale', () => {
           await m.mutateAsync({
             id: 'sale-test',
             payload: {
-              saleDate: new Date().toISOString(),
+              saleDate: new Date(),
               items: [{ productId: 'prod-001', productPriceId: 'price-1', quantity: 2 }],
             },
           })
@@ -75,7 +75,7 @@ describe('useCreateSale', () => {
             await m.mutateAsync({
               id,
               payload: {
-                saleDate: new Date().toISOString(),
+                saleDate: new Date(),
                 items: [{ productId: 'prod-001', productPriceId: 'price-1', quantity: 1 }],
               },
             })

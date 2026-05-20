@@ -1,8 +1,9 @@
-import { useApiQuery } from './useApiQuery'
+import type { SuppliersGet200Response } from '@tsanta22kyle/erp-client'
+import { rawJson, useApiQuery } from './useApiQuery'
 
 export function useSuppliers() {
-  return useApiQuery(
+  return useApiQuery<SuppliersGet200Response>(
     () => ['suppliers'],
-    (api) => api.GET('/suppliers', { params: { query: { limit: 50 } } }),
+    (api) => rawJson(api.suppliers.suppliersGetRaw({ limit: 50 })),
   )
 }

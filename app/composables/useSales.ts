@@ -1,14 +1,20 @@
 import { useQueryClient } from '@tanstack/vue-query'
-import { useApiQuery } from './useApiQuery'
+import type {
+  Sale,
+  SaleSummary,
+  SalePayload,
+  SalesGet200Response,
+} from '@tsanta22kyle/erp-client'
+import { rawJson, useApiQuery } from './useApiQuery'
 import { useApiMutation } from './useApiMutation'
-import type { components } from '~/api/types.gen'
-
-type SaleSummary = components['schemas']['SaleSummary']
-type SalePayload = components['schemas']['SalePayload']
-type Sale = components['schemas']['Sale']
 
 export type SaleSegment = 'Comptoir' | 'Pro' | 'Restaurant' | 'Gros'
 
+/**
+ * Extension UI-only : le serveur (mock) ajoute des champs de présentation
+ * (`segment`, `top`, `seller`, `status`) qui ne figurent pas dans le schéma
+ * OpenAPI mais sont consommés par la page Ventes.
+ */
 export interface SaleRow extends SaleSummary {
   segment?: SaleSegment
   status?: string
@@ -17,9 +23,9 @@ export interface SaleRow extends SaleSummary {
 }
 
 export function useSales() {
-  return useApiQuery(
+  return useApiQuery<SalesGet200Response>(
     () => ['sales'],
-    (api) => api.GET('/sales', { params: { query: { limit: 50 } } }),
+    (api) => rawJson(api.sales.salesGetRaw({ limit: 50 })),
   )
 }
 
@@ -27,10 +33,7 @@ export function useCreateSale() {
   const queryClient = useQueryClient()
   return useApiMutation<Sale, { id: string; payload: SalePayload }>(
     (api, vars) =>
-      api.PUT('/sales/{id}', {
-        params: { path: { id: vars.id } },
-        body: vars.payload,
-      }),
+      rawJson(api.sales.salesIdPutRaw({ id: vars.id, salePayload: vars.payload })),
     {
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['sales'] })

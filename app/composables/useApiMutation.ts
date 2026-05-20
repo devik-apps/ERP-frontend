@@ -1,21 +1,14 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/vue-query'
-import createClient from 'openapi-fetch'
-import type { paths } from '~/api/types.gen'
-
-type ApiClient = ReturnType<typeof createClient<paths>>
+import type { ErpApi } from '~/plugins/api.client'
 
 export function useApiMutation<TData, TVariables = void>(
-  mutationFn: (api: ApiClient, variables: TVariables) => Promise<{ data?: TData; error?: unknown }>,
+  mutationFn: (api: ErpApi, variables: TVariables) => Promise<TData>,
   options?: Omit<UseMutationOptions<TData, Error, TVariables>, 'mutationFn'>,
 ) {
   const { $api } = useNuxtApp()
 
   return useMutation<TData, Error, TVariables>({
-    mutationFn: async (variables) => {
-      const { data, error } = await mutationFn($api as ApiClient, variables)
-      if (error) throw error
-      return data as TData
-    },
+    mutationFn: (variables) => mutationFn($api as ErpApi, variables),
     ...options,
   })
 }

@@ -3,6 +3,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { useApiMutation } from '~/composables/useApiMutation'
+import { rawJson } from '~/composables/useApiQuery'
 import { generateUUID } from '~/utils/uuid'
 
 interface CategoryPayload { label: string; isActive: boolean }
@@ -11,10 +12,12 @@ interface Category { id?: string; label?: string; isActive?: boolean }
 const MutationComp = defineComponent({
   setup() {
     const mut = useApiMutation<Category, CategoryPayload>(
-      (api, vars) => api.PUT('/categories/{id}', {
-        params: { path: { id: generateUUID() } },
-        body: vars,
-      }),
+      (api, vars) => rawJson(
+        api.categories.categoriesIdPutRaw({
+          id: generateUUID(),
+          categoryPayload: vars,
+        }),
+      ),
     )
     return {
       isPending: mut.isPending,

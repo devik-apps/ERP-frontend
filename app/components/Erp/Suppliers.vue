@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { Plus, FileBarChart } from 'lucide-vue-next'
 import { useSuppliers } from '~/composables/useSuppliers'
-import type { components } from '~/api/types.gen'
-
-type Supplier = components['schemas']['Supplier']
+import type { Supplier } from '@tsanta22kyle/erp-client'
 
 type StatusFilter = 'Tous' | 'Actif' | 'Inactif'
 
