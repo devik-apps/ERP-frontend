@@ -4,6 +4,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-04',
 
   runtimeConfig: {
+    // Serveur uniquement — cible réelle du proxy Nitro `/api/v1/[...]`.
+    erpBackendUrl: process.env.ERP_BACKEND_URL ?? 'https://api.erp.local/v1',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.erp.local/v1',
     },
