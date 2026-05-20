@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Save } from 'lucide-vue-next'
+import { Plus, Save, X } from 'lucide-vue-next'
 import type { ProductPrice } from '@tsanta22kyle/erp-client'
 import { useUpsertProductPrice } from '~/composables/useProducts'
-import { usePackaging } from '~/composables/usePackaging'
+import { usePackaging, useUpsertPackaging } from '~/composables/usePackaging'
 import { generateUUID } from '~/utils/uuid'
 
 const props = defineProps<{
@@ -17,11 +17,16 @@ const { data: packagingData } = packagingQ
 const packagings = computed(() => packagingData.value?.data ?? [])
 
 const mutation = useUpsertProductPrice()
+const packagingMutation = useUpsertPackaging()
 
 // Saisie utilisateur en euros (UI) — l'API stocke les montants en centimes.
 const amountEuros = ref<number>(props.price?.amount != null ? props.price.amount / 100 : 0)
 const weightGrams = ref<number>(props.price?.weightGrams ?? 1000)
 const packagingId = ref<string>(props.price?.packaging?.id ?? '')
+
+// Mode création inline d'un conditionnement.
+const packagingMode = ref<'select' | 'create'>('select')
+const newPackagingLabel = ref<string>('')
 
 watch(packagings, (list) => {
   if (!packagingId.value && list.length > 0) {
@@ -30,8 +35,40 @@ watch(packagings, (list) => {
 }, { immediate: true })
 
 const canSubmit = computed(
-  () => amountEuros.value > 0 && weightGrams.value > 0 && !mutation.isPending.value,
+  () => amountEuros.value > 0
+    && weightGrams.value > 0
+    && packagingMode.value === 'select'
+    && !mutation.isPending.value,
 )
+
+const canSavePackaging = computed(
+  () => newPackagingLabel.value.trim().length > 0 && !packagingMutation.isPending.value,
+)
+
+function openPackagingCreate() {
+  newPackagingLabel.value = ''
+  packagingMode.value = 'create'
+}
+
+function cancelPackagingCreate() {
+  packagingMode.value = 'select'
+  newPackagingLabel.value = ''
+}
+
+function savePackaging() {
+  if (!canSavePackaging.value) return
+  const id = generateUUID()
+  packagingMutation.mutate(
+    { id, payload: { label: newPackagingLabel.value.trim(), isActive: true } },
+    {
+      onSuccess: () => {
+        packagingId.value = id
+        packagingMode.value = 'select'
+        newPackagingLabel.value = ''
+      },
+    },
+  )
+}
 
 function onSubmit() {
   if (!canSubmit.value) return
@@ -57,12 +94,55 @@ function onSubmit() {
 
 <template>
   <form class="modal-form" @submit.prevent="onSubmit">
-    <label class="field" data-field="packaging">
+    <div class="field" data-field="packaging">
       <span class="field-label">Conditionnement</span>
-      <select v-model="packagingId" name="packaging">
-        <option v-for="p in packagings" :key="p.id" :value="p.id">{{ p.label }}</option>
-      </select>
-    </label>
+
+      <div v-if="packagingMode === 'select'" class="packaging-row">
+        <select v-model="packagingId" name="packaging">
+          <option v-for="p in packagings" :key="p.id" :value="p.id">{{ p.label }}</option>
+        </select>
+        <button
+          type="button"
+          class="btn btn-sm"
+          data-action="new-packaging"
+          @click="openPackagingCreate"
+        >
+          <Plus :size="12" :stroke-width="1.5" /> Nouveau
+        </button>
+      </div>
+
+      <div v-else class="packaging-row">
+        <input
+          v-model="newPackagingLabel"
+          name="new-packaging-label"
+          type="text"
+          placeholder="Libellé (ex. Export, Pro, Détail…)"
+          autofocus
+          @keydown.enter.prevent="savePackaging"
+        >
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          data-action="save-packaging"
+          :disabled="!canSavePackaging"
+          @click="savePackaging"
+        >
+          <Save :size="12" :stroke-width="1.5" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm"
+          data-action="cancel-packaging"
+          @click="cancelPackagingCreate"
+        >
+          <X :size="12" :stroke-width="1.5" />
+        </button>
+      </div>
+
+      <span v-if="packagingMutation.isError.value" class="modal-error" role="alert">
+        Impossible d'enregistrer le conditionnement.
+      </span>
+    </div>
 
     <div class="field-row">
       <label class="field" data-field="amount">

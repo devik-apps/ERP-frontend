@@ -400,6 +400,18 @@ button { font-family: inherit; cursor: pointer; }
   justify-content: flex-end;
 }
 
+.packaging-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.packaging-row select,
+.packaging-row input {
+  flex: 1;
+  min-width: 0;
+}
+
 .btn-row {
   display: flex;
   gap: 8px;
