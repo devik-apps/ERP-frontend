@@ -14,6 +14,14 @@ test.describe('Dashboard', () => {
     await expect(page.locator('.metric')).toHaveCount(4)
   })
 
+  test('affiche la carte CA avec le graphique 7 jours', async ({ page }) => {
+    const card = page.locator('.sales-chart-card')
+    await expect(card).toBeVisible()
+    await expect(card).toContainText("Chiffre d'affaires")
+    await expect(card).toContainText('7 derniers jours')
+    await expect(card.locator('.sales-chart')).toBeVisible()
+  })
+
   test('affiche les 11 mouvements récents', async ({ page }) => {
     await expect(page.locator('.tbl').first().locator('tbody tr')).toHaveCount(11)
   })

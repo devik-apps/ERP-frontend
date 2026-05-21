@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useStockSummary, useTransformationCount } from '~/composables/useDashboard'
+import { useStockSummary, useTransformationCount, useSalesByDay } from '~/composables/useDashboard'
 import { useProducts } from '~/composables/useProducts'
 import { useSales } from '~/composables/useSales'
 import { useStockMovements } from '~/composables/useStock'
+import LineChart from '~/components/ui/chart/LineChart.vue'
 
 type Filter = 'Tous' | 'Entrée' | 'Sortie'
 const filter = ref<Filter>('Tous')
@@ -58,6 +59,29 @@ const inactiveCount = computed(() => totalCount.value - activeCount.value)
 const transformTotal = computed(() => transformData.value?.meta?.total ?? 0)
 
 const movements = computed(() => movementsData.value?.data ?? [])
+
+const salesSeries = useSalesByDay()
+
+const salesSeriesTotal = computed(() =>
+  salesSeries.value.reduce((s, p) => s + p.revenue, 0),
+)
+
+const salesSeriesTotalFormatted = computed(() =>
+  frFR(salesSeriesTotal.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+)
+
+const shortDayFmt = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short' })
+
+function fmtAxisDate(i: number) {
+  const point = salesSeries.value[i]
+  if (!point) return ''
+  return shortDayFmt.format(new Date(point.date)).replace('.', '')
+}
+
+function fmtAxisEuros(v: number) {
+  if (v >= 1000) return `${frFR(v / 1000, { maximumFractionDigits: 1 })} k€`
+  return `${frFR(v, { maximumFractionDigits: 0 })} €`
+}
 
 const filteredMovements = computed(() => {
   if (filter.value === 'Tous') return movements.value
@@ -140,6 +164,26 @@ function fmtWeight(g?: number) {
           <span class="metric-hint">ce mois</span>
         </div>
       </div>
+    </div>
+
+    <div class="card sales-chart-card">
+      <div class="sales-chart-head">
+        <div>
+          <div class="card-title">Chiffre d'affaires</div>
+          <div class="card-sub">7 derniers jours</div>
+        </div>
+        <div class="sales-chart-total">
+          <span class="metric-num">{{ salesSeriesTotalFormatted }}</span>
+          <span class="metric-unit">€</span>
+        </div>
+      </div>
+      <LineChart
+        :data="salesSeries"
+        index="date"
+        category="revenue"
+        :x-formatter="fmtAxisDate"
+        :y-formatter="fmtAxisEuros"
+      />
     </div>
 
     <div class="card table-card">

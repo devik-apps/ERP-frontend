@@ -154,6 +154,30 @@ describe('ErpDashboard — état API hors-ligne', () => {
   })
 })
 
+describe('ErpDashboard — graphique CA 7 jours', () => {
+  it('affiche une carte « Chiffre d\'affaires » avec le sous-titre 7 derniers jours', async () => {
+    const w = await mountSuspended(ErpDashboard)
+    await flushPromises()
+    const card = w.find('.sales-chart-card')
+    expect(card.exists()).toBe(true)
+    expect(card.text()).toContain("Chiffre d'affaires")
+    expect(card.text()).toContain('7 derniers jours')
+  })
+
+  it('rend un conteneur de graphique dans la carte CA', async () => {
+    const w = await mountSuspended(ErpDashboard)
+    await flushPromises()
+    expect(w.find('.sales-chart-card .sales-chart').exists()).toBe(true)
+  })
+
+  it('affiche le total CA cumulé sur les 7 jours (1 351,10 €)', async () => {
+    const w = await mountSuspended(ErpDashboard)
+    await flushPromises()
+    const card = w.find('.sales-chart-card')
+    expect(card.find('.sales-chart-total').text()).toContain('1 351,10')
+  })
+})
+
 describe('ErpDashboard — colonnes du tableau', () => {
   it('contient les 5 colonnes attendues (sans Saisi par ni Date)', async () => {
     const w = await mountSuspended(ErpDashboard)

@@ -17,6 +17,8 @@
   "dependencies": {
     "@tanstack/vue-query": "^5.100.9",
     "@tsanta22kyle/erp-client": "1.0.3",
+    "@unovis/ts": "1.6.5",
+    "@unovis/vue": "1.6.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
