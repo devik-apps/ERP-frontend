@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { useStockSummary, useTransformationCount } from '~/composables/useDashboard'
+import { useStockSummary, useTransformationCount, useSalesByDay } from '~/composables/useDashboard'
 import { MOCK_STOCK_SUMMARY, MOCK_TRANSFORMATIONS } from '../mocks/handlers'
 
 describe('useStockSummary', () => {
@@ -63,5 +63,92 @@ describe('useTransformationCount', () => {
     await flushPromises()
     const items = (w.vm as any).data?.data
     expect(items).toHaveLength(MOCK_TRANSFORMATIONS.length)
+  })
+})
+
+describe('useSalesByDay', () => {
+  it('retourne 7 entrées (7 derniers jours)', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series).toHaveLength(7)
+  })
+
+  it('chaque entrée contient { date, revenue }', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    for (const point of series) {
+      expect(point).toHaveProperty('date')
+      expect(point).toHaveProperty('revenue')
+      expect(typeof point.revenue).toBe('number')
+    }
+  })
+
+  it('le dernier point correspond au jour de la vente la plus récente (2026-05-04)', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series[6].date).toBe('2026-05-04')
+  })
+
+  it('le premier point est 6 jours avant le dernier (2026-04-28)', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series[0].date).toBe('2026-04-28')
+  })
+
+  it('CA du 2026-05-04 = 339,70 € (somme des 5 ventes du jour)', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series[6].revenue).toBeCloseTo(339.70, 2)
+  })
+
+  it('CA du 2026-05-03 = 1 011,40 € (somme des 7 ventes du jour)', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series[5].revenue).toBeCloseTo(1011.40, 2)
+  })
+
+  it('les jours sans vente sont à 0 €', async () => {
+    const stub = defineComponent({
+      setup() { return { series: useSalesByDay() } },
+      render: () => h('div'),
+    })
+    const w = await mountSuspended(stub)
+    await flushPromises()
+    const series = (w.vm as any).series
+    expect(series[0].revenue).toBe(0)
+    expect(series[1].revenue).toBe(0)
+    expect(series[2].revenue).toBe(0)
+    expect(series[3].revenue).toBe(0)
+    expect(series[4].revenue).toBe(0)
   })
 })
