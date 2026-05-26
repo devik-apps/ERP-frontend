@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Menu } from 'lucide-vue-next'
+import { LogOut, Menu } from 'lucide-vue-next'
 
 const route = useRoute()
 const nav = useMobileNav()
+const { email, isAuthenticated, signOut } = useAuth()
 
 const routeLabels: Record<string, string> = {
   '/dashboard':      'Tableau de bord',
@@ -22,6 +23,11 @@ const today = computed(() => {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   }).format(new Date())
 })
+
+async function onLogout() {
+  await signOut()
+  await navigateTo('/login')
+}
 </script>
 
 <template>
@@ -42,6 +48,18 @@ const today = computed(() => {
     <div class="topbar-tools">
       <span class="small muted">{{ today }}</span>
       <span class="kbd">⌘ K</span>
+      <template v-if="isAuthenticated">
+        <span class="topbar-user">{{ email }}</span>
+        <button
+          type="button"
+          class="topbar-logout"
+          aria-label="Se déconnecter"
+          title="Se déconnecter"
+          @click="onLogout"
+        >
+          <LogOut :size="14" :stroke-width="1.5" />
+        </button>
+      </template>
     </div>
   </div>
 </template>

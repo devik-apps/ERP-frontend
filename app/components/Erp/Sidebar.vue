@@ -6,6 +6,10 @@ import {
 
 const route = useRoute()
 const nav = useMobileNav()
+const { email, isAuthenticated } = useAuth()
+
+const initial = computed(() => (email.value?.[0] ?? '·').toUpperCase())
+const displayName = computed(() => email.value ?? 'Invité')
 
 const navItems = [
   { id: 'dashboard',  label: 'Tableau de bord', icon: LayoutDashboard, to: '/dashboard' },
@@ -60,10 +64,10 @@ function isActive(item: typeof navItems[number]) {
 
     <div class="sb-foot">
       <div class="sb-user">
-        <div class="sb-avatar">M</div>
+        <div class="sb-avatar">{{ initial }}</div>
         <div>
-          <div class="sb-user-name">Marc Loiseau</div>
-          <div class="sb-user-role">Responsable</div>
+          <div class="sb-user-name">{{ displayName }}</div>
+          <div class="sb-user-role">{{ isAuthenticated ? 'Connecté' : 'Non connecté' }}</div>
         </div>
       </div>
     </div>
