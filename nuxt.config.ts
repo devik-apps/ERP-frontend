@@ -36,8 +36,21 @@ export default defineNuxtConfig({
   modules: [
     'shadcn-nuxt',
     '@serwist/nuxt',
+    '@nuxtjs/supabase',
     ...(process.env.VITEST ? ['@nuxt/test-utils/module'] : []),
   ],
+
+  supabase: {
+    url: process.env.SUPABASE_URL || 'http://127.0.0.1:54321',
+    key: process.env.SUPABASE_KEY || 'public-anon-key',
+    redirect: !process.env.VITEST,
+    useSsrCookies: !process.env.VITEST,
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/login'],
+    },
+  },
 
   css: ['./app/assets/css/main.css'],
 
