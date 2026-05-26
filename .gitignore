@@ -11,3 +11,4 @@ dist
 # Playwright
 test-results/
 playwright-report/
+app/tests/e2e/.auth/

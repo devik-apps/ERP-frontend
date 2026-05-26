@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import 'dotenv/config'
+
+const STORAGE_STATE = 'app/tests/e2e/.auth/user.json'
 
 export default defineConfig({
   testDir: './app/tests/e2e',
@@ -18,7 +21,25 @@ export default defineConfig({
   },
 
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'auth-ui',
+      testMatch: /auth\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium',
+      testIgnore: [/auth\.spec\.ts/, /auth\.setup\.ts/],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE,
+      },
+      dependencies: ['setup'],
+    },
   ],
 
   webServer: {
