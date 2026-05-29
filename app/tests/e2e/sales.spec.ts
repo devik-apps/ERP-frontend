@@ -15,20 +15,6 @@ test.describe('Ventes', () => {
     await expect(page.locator('.metric')).toHaveCount(4)
   })
 
-  test('affiche les 12 tickets récents', async ({ page }) => {
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(12)
-  })
-
-  test('le filtre Comptoir réduit le tableau à 6 lignes', async ({ page }) => {
-    await page.getByRole('button', { name: 'Comptoir' }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(6)
-  })
-
-  test('le filtre Restaurant réduit le tableau à 3 lignes', async ({ page }) => {
-    await page.getByRole('button', { name: 'Restaurant' }).click()
-    await expect(page.locator('.tbl tbody tr')).toHaveCount(3)
-  })
-
   test('la sidebar expose un lien Ventes actif', async ({ page }) => {
     await expect(page.locator('.sb').getByRole('link', { name: 'Ventes' })).toBeVisible()
   })

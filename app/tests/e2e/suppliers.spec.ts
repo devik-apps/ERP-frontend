@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-const API = 'https://api.erp.local/v1'
+const API = '**/api/v1'
 
 const SUPPLIERS = [
   { id: 'sup-001', name: 'Mareyeur Sète',       contact: 'Jean Petit',       description: 'Poissons frais',  isActive: true  },

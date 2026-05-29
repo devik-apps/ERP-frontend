@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { test, expect } from '@playwright/test'
 
 test.describe('Authentification — /login', () => {
@@ -15,6 +16,7 @@ test.describe('Authentification — /login', () => {
 
   test('affiche un message d\'erreur quand les identifiants sont invalides', async ({ page }) => {
     await page.goto('/login')
+    await page.waitForLoadState('networkidle')
     await page.fill('input[type="email"]', 'inexistant@nowhere.test')
     await page.fill('input[type="password"]', 'mauvais-mot-de-passe-x9')
     await page.click('button[type="submit"]')
@@ -28,6 +30,7 @@ test.describe('Authentification — /login', () => {
     test.skip(!email || !password, 'E2E_SUPABASE_EMAIL/PASSWORD non définis')
 
     await page.goto('/login')
+    await page.waitForLoadState('networkidle')
     await page.fill('input[type="email"]', email!)
     await page.fill('input[type="password"]', password!)
     await Promise.all([
@@ -43,6 +46,7 @@ test.describe('Authentification — /login', () => {
     test.skip(!email || !password, 'E2E_SUPABASE_EMAIL/PASSWORD non définis')
 
     await page.goto('/login')
+    await page.waitForLoadState('networkidle')
     await page.fill('input[type="email"]', email!)
     await page.fill('input[type="password"]', password!)
     await Promise.all([

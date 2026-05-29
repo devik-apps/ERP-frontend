@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { test as setup, expect } from '@playwright/test'
 
 const STORAGE_STATE = 'app/tests/e2e/.auth/user.json'
@@ -14,6 +15,7 @@ setup('connexion via /login', async ({ page }) => {
   }
 
   await page.goto('/login')
+  await page.waitForLoadState('networkidle')
   await page.fill('input[type="email"]', email)
   await page.fill('input[type="password"]', password)
   await Promise.all([
