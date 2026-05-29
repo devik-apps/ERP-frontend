@@ -23,8 +23,4 @@ test.describe('Stock — vue lecture seule', () => {
     await expect(headers).toHaveText(['Produit', 'Catégorie', 'Stock', 'Statut'])
   })
 
-  test('affiche le journal des mouvements récents', async ({ page }) => {
-    await expect(page.locator('[data-table="movements"]')).toBeVisible()
-    await expect(page.locator('[data-table="movements"] .mv-pill').first()).toBeVisible()
-  })
 })

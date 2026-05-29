@@ -99,7 +99,7 @@ function fmtAmount(cents?: number): string {
     <header id="sales" class="sec-head">
       <div>
         <div class="eyebrow">Ventes</div>
-        <h2 class="sec-title">Activite commerciale</h2>
+        <h2 class="sec-title">Activité commerciale</h2>
         <div class="sec-sub">Tickets et chiffre d'affaires du jour</div>
       </div>
       <div class="sec-right">
