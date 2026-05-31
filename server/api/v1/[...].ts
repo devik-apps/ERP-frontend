@@ -1,5 +1,5 @@
 import { serverSupabaseSession } from '#supabase/server'
-import { buildAuthHeader } from '~~/server/utils/auth-header'
+import { buildProxyHeaders } from '~~/server/utils/auth-header'
 
 /**
  * Proxy Nitro → backend ERP.
@@ -7,8 +7,8 @@ import { buildAuthHeader } from '~~/server/utils/auth-header'
  * Le navigateur appelle ce serveur Nuxt (même origine), qui relaie la requête
  * vers le backend Render. Ça contourne le problème CORS du backend.
  *
- * Injecte aussi le JWT Supabase de l'utilisateur connecté en `Authorization: Bearer`
- * pour que le backend ERP puisse authentifier la requête.
+ * Injecte le JWT Supabase de l'utilisateur connecté en `Authorization: Bearer`
+ * et neutralise le header `Cookie` (sinon le backend rejette en 431).
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -19,6 +19,6 @@ export default defineEventHandler(async (event) => {
   const session = await serverSupabaseSession(event).catch(() => null)
 
   return proxyRequest(event, `${backend}/${path}${query}`, {
-    headers: buildAuthHeader(session as { access_token?: string } | null),
+    headers: buildProxyHeaders(session as { access_token?: string } | null),
   })
 })
