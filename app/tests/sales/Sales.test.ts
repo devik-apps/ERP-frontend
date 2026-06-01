@@ -175,18 +175,7 @@ describe('ErpSales -- journal des tickets', () => {
   })
 })
 
-describe('ErpSales — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /sales échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/sales', () => HttpResponse.error()),
-    )
-    const w = await mountSuspended(ErpSales)
-    await flushPromises()
-    await flushPromises()
-    await w.vm.$nextTick()
-    expect(w.find('.api-state.is-error').exists()).toBe(true)
-  })
-
+describe('ErpSales — état vide', () => {
   it('affiche une ligne "Aucun ticket" quand /sales renvoie un tableau vide', async () => {
     server.use(
       http.get('https://api.erp.local/v1/sales', () =>

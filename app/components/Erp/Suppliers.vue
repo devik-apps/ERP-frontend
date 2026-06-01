@@ -11,7 +11,6 @@ const statusChips: StatusFilter[] = ['Tous', 'Actif', 'Inactif']
 const suppliersQ = useSuppliers()
 const { data: suppliersData } = suppliersQ
 const allSuppliers = computed(() => (suppliersData.value?.data ?? []) as Supplier[])
-const hasApiError = computed(() => suppliersQ.isError.value)
 
 const filteredSuppliers = computed(() => {
   if (statusFilter.value === 'Tous') return allSuppliers.value
@@ -56,10 +55,6 @@ function shortId(id?: string): string {
         </button>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="metric-grid">
       <div v-for="m in metrics" :key="m.label" class="card metric">

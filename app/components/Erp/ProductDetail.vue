@@ -18,8 +18,6 @@ const { data: product } = productQ
 const { data: stock } = stockQ
 const { data: pricesData } = pricesQ
 
-const hasApiError = computed(() => productQ.isError.value || stockQ.isError.value || pricesQ.isError.value)
-
 const movementOpen = ref(false)
 const editOpen = ref(false)
 const priceFormOpen = ref(false)
@@ -114,10 +112,6 @@ function badgeClass() {
         </button>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="product-grid">
       <article class="card product-summary">

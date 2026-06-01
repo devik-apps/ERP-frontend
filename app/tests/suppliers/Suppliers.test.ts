@@ -67,15 +67,4 @@ describe('ErpSuppliers', () => {
     await w.vm.$nextTick()
     expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun fournisseur')
   })
-
-  it('affiche un bandeau "API indisponible" quand /suppliers échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/suppliers', () => HttpResponse.error()),
-    )
-    const w = await mountSuspended(ErpSuppliers)
-    await flushPromises()
-    await flushPromises()
-    await w.vm.$nextTick()
-    expect(w.find('.api-state.is-error').exists()).toBe(true)
-  })
 })
