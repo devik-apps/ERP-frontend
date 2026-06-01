@@ -20,13 +20,6 @@ const { data: salesData }     = salesQ
 const { data: movementsData } = movementsQ
 const { data: transformData } = transformQ
 
-const hasApiError = computed(() =>
-  stockSummaryQ.isError.value
-  || productsQ.isError.value
-  || salesQ.isError.value
-  || movementsQ.isError.value
-  || transformQ.isError.value,
-)
 
 function frFR(n: number, opts?: Intl.NumberFormatOptions) {
   return n.toLocaleString('fr-FR', opts).replace(/ /g, ' ')
@@ -58,7 +51,19 @@ const inactiveCount = computed(() => totalCount.value - activeCount.value)
 
 const transformTotal = computed(() => transformData.value?.meta?.total ?? 0)
 
-const movements = computed(() => movementsData.value?.data ?? [])
+// Les mouvements backend ne portent que `productId` : on résout le libellé
+// produit depuis la liste des produits (tolérant au `product` des mocks).
+const movements = computed(() => {
+  const labels = new Map<string, string>()
+  for (const p of productsData.value?.data ?? []) {
+    if (p.id) labels.set(p.id, p.label ?? '')
+  }
+  return ((movementsData.value?.data ?? []) as Record<string, any>[]).map((m) => {
+    if (m.product) return m
+    const id = m.productId as string | undefined
+    return { ...m, product: id ? { id, label: labels.get(id) ?? '' } : undefined }
+  })
+})
 
 const salesSeries = useSalesByDay()
 
@@ -115,10 +120,6 @@ function fmtWeight(g?: number) {
         <button class="btn btn-ghost">Exporter le rapport</button>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="metric-grid">
       <div class="card metric">
