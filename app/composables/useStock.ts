@@ -1,3 +1,4 @@
+import { computed } from 'vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import type {
   StockGet200Response,
@@ -6,6 +7,8 @@ import type {
 } from '@tsanta22kyle/erp-client'
 import { rawJson, useApiQuery } from './useApiQuery'
 import { useApiMutation } from './useApiMutation'
+import { useProducts } from './useProducts'
+import { useStockSummary } from './useDashboard'
 
 type StockMutationVars = { id: string; payload: StockMovementPayload }
 type StockMutationContext = { previousStock?: unknown; previousProducts?: unknown }
@@ -15,6 +18,60 @@ export function useStockMovements() {
     () => ['stock'],
     (api) => rawJson(api.stock.stockGetRaw({ limit: 50 })),
   )
+}
+
+/**
+ * Le stock réel n'est PAS porté par `product.currentStock` (le backend le
+ * renvoie à 0), mais par l'endpoint `/stock/summary`, agrégé par `productId`.
+ * On joint donc le résumé sur la liste produits et on expose `currentStock`
+ * en kg (= totalWeightGrams / 1000). Clé tolérante (`productId` réel ou
+ * `product.id` des mocks) ; à défaut de résumé, on garde la valeur produit.
+ */
+function summaryProductId(s: Record<string, any>): string | undefined {
+  return s.productId ?? s.product?.id
+}
+
+export function useProductsWithStock() {
+  const productsQ = useProducts()
+  const summaryQ = useStockSummary()
+
+  const products = computed(() => {
+    const byId = new Map<string, Record<string, any>>()
+    for (const s of (summaryQ.data.value?.data ?? []) as Record<string, any>[]) {
+      const id = summaryProductId(s)
+      if (id) byId.set(id, s)
+    }
+    return (productsQ.data.value?.data ?? []).map((p) => {
+      const s = p.id ? byId.get(p.id) : undefined
+      return s ? { ...p, currentStock: (s.totalWeightGrams ?? 0) / 1000 } : p
+    })
+  })
+
+  return { products, productsQ, summaryQ }
+}
+
+/**
+ * Les mouvements renvoyés par le backend ne portent que `productId` (pas
+ * d'objet `product` imbriqué). On résout le libellé produit via la liste des
+ * produits. Tolérant au `product` déjà présent (mocks).
+ */
+export function useEnrichedMovements() {
+  const movementsQ = useStockMovements()
+  const productsQ = useProducts()
+
+  const movements = computed(() => {
+    const labels = new Map<string, string>()
+    for (const p of productsQ.data.value?.data ?? []) {
+      if (p.id) labels.set(p.id, p.label ?? '')
+    }
+    return ((movementsQ.data.value?.data ?? []) as Record<string, any>[]).map((m) => {
+      if (m.product) return m
+      const id = m.productId as string | undefined
+      return { ...m, product: id ? { id, label: labels.get(id) ?? '' } : undefined }
+    })
+  })
+
+  return { movements, movementsQ, productsQ }
 }
 
 export function useCreateStockMovement() {

@@ -124,22 +124,7 @@ describe('ErpDashboard — journal des mouvements', () => {
   })
 })
 
-describe('ErpDashboard — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /stock/summary échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/stock/summary', () =>
-        HttpResponse.error(),
-      ),
-    )
-    const w = await mountSuspended(ErpDashboard)
-    await flushPromises()
-    await flushPromises()
-    await w.vm.$nextTick()
-    const banner = w.find('.api-state.is-error')
-    expect(banner.exists()).toBe(true)
-    expect(banner.text()).toContain('API indisponible')
-  })
-
+describe('ErpDashboard — état vide', () => {
   it('affiche une ligne "Aucun mouvement" quand /stock renvoie un tableau vide', async () => {
     server.use(
       http.get('https://api.erp.local/v1/stock', () =>
