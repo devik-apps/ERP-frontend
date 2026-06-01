@@ -12,7 +12,6 @@ const filterChips: SegmentFilter[] = ['Tous', ...SALE_SEGMENTS]
 const salesQ = useSales()
 const { data: salesData } = salesQ
 const allSales = computed(() => (salesData.value?.data ?? []) as SaleRow[])
-const hasApiError = computed(() => salesQ.isError.value)
 
 const filteredSales = computed(() => {
   if (filter.value === 'Tous') return allSales.value
@@ -109,9 +108,6 @@ function fmtAmount(amount?: number): string {
       </div>
     </header>
 
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="metric-grid">
       <div v-for="m in metrics" :key="m.label" class="card metric">

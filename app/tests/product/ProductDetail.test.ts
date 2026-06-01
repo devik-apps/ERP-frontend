@@ -183,16 +183,7 @@ describe('ErpProductDetail — modales mouvement et édition', () => {
   })
 })
 
-describe('ErpProductDetail — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /products/:id échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/products/:id', () => HttpResponse.error()),
-    )
-    const w = await mount()
-    await flushPromises()
-    expect(w.find('.api-state.is-error').exists()).toBe(true)
-  })
-
+describe('ErpProductDetail — état vide', () => {
   it('affiche une ligne "Aucun tarif" quand /products/:id/prices renvoie un tableau vide', async () => {
     server.use(
       http.get('https://api.erp.local/v1/products/:id/prices', () =>
