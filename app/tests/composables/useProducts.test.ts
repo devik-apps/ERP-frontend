@@ -55,7 +55,7 @@ const StockComp = defineComponent({
     const { data } = useProductStock(() => props.id)
     return { data }
   },
-  template: `<div><span class="qty">{{ data?.totalQuantity ?? 0 }}</span></div>`,
+  template: `<div><span class="qty">{{ data?.totalQuantity ?? 0 }}</span><span class="wg">{{ data?.totalWeightGrams ?? 0 }}</span></div>`,
 })
 
 const PricesComp = defineComponent({
@@ -97,11 +97,13 @@ describe('useProduct', () => {
 })
 
 describe('useProductStock', () => {
-  it('retourne le stock du produit', async () => {
+  it('retourne le stock du produit depuis /stock/summary', async () => {
     const w = await mountSuspended(StockComp, { props: { id: 'prod-001' } })
     await flushPromises()
     await w.vm.$nextTick()
-    expect(w.find('.qty').text()).toBe('32.4')
+    // prod-001 dans MOCK_STOCK_SUMMARY : totalQuantity 4, totalWeightGrams 32400.
+    expect(w.find('.qty').text()).toBe('4')
+    expect(w.find('.wg').text()).toBe('32400')
   })
 })
 
