@@ -62,7 +62,7 @@ describe('ErpProductPriceForm — édition', () => {
 
   it('pré-remplit les champs depuis la prop price', async () => {
     const w = await mount({ price: EXISTING })
-    expect((w.find('input[name="amount"]').element as HTMLInputElement).value).toBe('34')
+    expect((w.find('input[name="amount"]').element as HTMLInputElement).value).toBe('3400')
     expect((w.find('input[name="weightGrams"]').element as HTMLInputElement).value).toBe('1000')
     expect((w.find('select[name="packaging"]').element as HTMLSelectElement).value).toBe('pkg-2')
   })

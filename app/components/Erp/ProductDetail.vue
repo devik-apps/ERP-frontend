@@ -84,8 +84,8 @@ function fr(n: number) {
 }
 
 function formatPrice(amount: number, weightGrams: number): string {
-  const pricePerKg = (amount / 100) / (weightGrams / 1000)
-  return pricePerKg.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €/kg'
+  const pricePerKg = amount / (weightGrams / 1000)
+  return pricePerKg.toLocaleString('fr-FR', { maximumFractionDigits: 0 }).replace(/ /g, ' ') + ' Ar/kg'
 }
 
 function badgeClass() {

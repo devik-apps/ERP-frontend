@@ -115,7 +115,7 @@ describe('useSalesByDay', () => {
     expect(series[0].date).toBe('2026-04-28')
   })
 
-  it('CA du 2026-05-04 = 339,70 € (somme des 5 ventes du jour)', async () => {
+  it('CA du 2026-05-04 = 33 970 Ar (somme des 5 ventes du jour)', async () => {
     const stub = defineComponent({
       setup() { return { series: useSalesByDay() } },
       render: () => h('div'),
@@ -123,10 +123,10 @@ describe('useSalesByDay', () => {
     const w = await mountSuspended(stub)
     await flushPromises()
     const series = (w.vm as any).series
-    expect(series[6].revenue).toBeCloseTo(339.70, 2)
+    expect(series[6].revenue).toBeCloseTo(33970, 2)
   })
 
-  it('CA du 2026-05-03 = 1 011,40 € (somme des 7 ventes du jour)', async () => {
+  it('CA du 2026-05-03 = 101 140 Ar (somme des 7 ventes du jour)', async () => {
     const stub = defineComponent({
       setup() { return { series: useSalesByDay() } },
       render: () => h('div'),
@@ -134,10 +134,10 @@ describe('useSalesByDay', () => {
     const w = await mountSuspended(stub)
     await flushPromises()
     const series = (w.vm as any).series
-    expect(series[5].revenue).toBeCloseTo(1011.40, 2)
+    expect(series[5].revenue).toBeCloseTo(101140, 2)
   })
 
-  it('les jours sans vente sont à 0 €', async () => {
+  it('les jours sans vente sont à 0 Ar', async () => {
     const stub = defineComponent({
       setup() { return { series: useSalesByDay() } },
       render: () => h('div'),

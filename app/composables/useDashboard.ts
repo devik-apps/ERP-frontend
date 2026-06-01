@@ -60,7 +60,7 @@ export function useSalesByDay() {
       if (!s.saleDate) continue
       const key = isoDay(new Date(s.saleDate))
       const bucket = byDate.get(key)
-      if (bucket) bucket.revenue += (s.totalAmount ?? 0) / 100
+      if (bucket) bucket.revenue += (s.totalAmount ?? 0)
     }
 
     return buckets

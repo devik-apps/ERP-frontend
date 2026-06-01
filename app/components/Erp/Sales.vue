@@ -22,15 +22,12 @@ const filteredSales = computed(() => {
 const mutation = useCreateSale()
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/ /g, ' ')
-const fmtDecimal = (n: number) =>
-  n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const metrics = computed(() => {
   const list = allSales.value
   const ticketCount = list.length
-  const totalCents = list.reduce((acc, s) => acc + (s.totalAmount ?? 0), 0)
-  const totalEuros = totalCents / 100
-  const avgEuros = ticketCount > 0 ? totalCents / ticketCount / 100 : 0
+  const total = list.reduce((acc, s) => acc + (s.totalAmount ?? 0), 0)
+  const avg = ticketCount > 0 ? total / ticketCount : 0
 
   const counts = new Map<SaleSegment, number>()
   for (const s of list) {
@@ -47,8 +44,8 @@ const metrics = computed(() => {
   return [
     {
       label: "Chiffre d'affaires",
-      value: fmtInt(totalEuros),
-      unit: '€',
+      value: fmtInt(total),
+      unit: 'Ar',
       hint: `${ticketCount} ticket${ticketCount > 1 ? 's' : ''}`,
     },
     {
@@ -59,8 +56,8 @@ const metrics = computed(() => {
     },
     {
       label: 'Panier moyen',
-      value: fmtDecimal(avgEuros),
-      unit: '€',
+      value: fmtInt(avg),
+      unit: 'Ar',
       hint: `${ticketCount} ticket${ticketCount > 1 ? 's' : ''}`,
     },
     {
@@ -88,9 +85,9 @@ function fmtDate(iso?: string | Date): string {
   return `${dd}/${mm} ${hh}:${mn}`
 }
 
-function fmtAmount(cents?: number): string {
-  if (cents == null) return '—'
-  return (cents / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+function fmtAmount(amount?: number): string {
+  if (amount == null) return '—'
+  return amount.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' Ar'
 }
 </script>
 
