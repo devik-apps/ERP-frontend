@@ -110,11 +110,14 @@ const MOCK_PRODUCT_STOCK = {
   lastMovementAt: '2026-05-04T10:12:00Z',
 }
 
+// Le backend ERP sérialise les prix en PascalCase (Amount, WeightGrams, ID…),
+// contrairement au reste de l'API. Le mock reproduit cette casse pour couvrir
+// la normalisation côté front (cf. normalizeProductPrice).
 const MOCK_PRODUCT_PRICES = [
-  { id: 'price-1', productId: 'prod-001', packaging: { id: 'pkg-1', label: 'Détail'     }, amount: 3800, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
-  { id: 'price-2', productId: 'prod-001', packaging: { id: 'pkg-2', label: 'Pro'        }, amount: 3400, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
-  { id: 'price-3', productId: 'prod-001', packaging: { id: 'pkg-3', label: 'Restaurant' }, amount: 3250, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
-  { id: 'price-4', productId: 'prod-001', packaging: { id: 'pkg-4', label: 'Gros'       }, amount: 2980, weightGrams: 1000, validFrom: '2026-01-01T00:00:00Z' },
+  { ID: 'price-1', ProductID: 'prod-001', Packaging: { ID: 'pkg-1', Label: 'Détail'     }, Amount: 3800, WeightGrams: 1000, ValidFrom: '2026-01-01T00:00:00Z' },
+  { ID: 'price-2', ProductID: 'prod-001', Packaging: { ID: 'pkg-2', Label: 'Pro'        }, Amount: 3400, WeightGrams: 1000, ValidFrom: '2026-01-01T00:00:00Z' },
+  { ID: 'price-3', ProductID: 'prod-001', Packaging: { ID: 'pkg-3', Label: 'Restaurant' }, Amount: 3250, WeightGrams: 1000, ValidFrom: '2026-01-01T00:00:00Z' },
+  { ID: 'price-4', ProductID: 'prod-001', Packaging: { ID: 'pkg-4', Label: 'Gros'       }, Amount: 2980, WeightGrams: 1000, ValidFrom: '2026-01-01T00:00:00Z' },
 ]
 
 export const handlers = [

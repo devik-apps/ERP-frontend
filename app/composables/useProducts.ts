@@ -55,10 +55,41 @@ export function useProductStock(id: MaybeRefOrGetter<string>) {
   )
 }
 
+/**
+ * Le backend ERP sérialise les prix en PascalCase (`Amount`, `WeightGrams`,
+ * `ID`…) alors que le reste de l'API est en camelCase. Comme `rawJson` court-
+ * circuite les convertisseurs du SDK, on normalise ici vers le contrat
+ * `ProductPrice` camelCase attendu par l'UI. Tolérant aux deux casses pour
+ * rester compatible avec les mocks (camelCase) et le backend réel (PascalCase).
+ */
+function normalizePackaging(raw: Record<string, any> | null | undefined) {
+  if (raw == null) return undefined
+  return { id: raw.id ?? raw.ID, label: raw.label ?? raw.Label }
+}
+
+export function normalizeProductPrice(raw: Record<string, any>): ProductPrice {
+  return {
+    id: raw.id ?? raw.ID,
+    productId: raw.productId ?? raw.ProductID,
+    packaging: normalizePackaging(raw.packaging ?? raw.Packaging),
+    amount: raw.amount ?? raw.Amount,
+    weightGrams: raw.weightGrams ?? raw.WeightGrams,
+    validFrom: raw.validFrom ?? raw.ValidFrom,
+    validTo: raw.validTo ?? raw.ValidTo,
+    description: raw.description ?? raw.Description,
+    isActive: raw.isActive ?? raw.IsActive,
+  }
+}
+
 export function useProductPrices(id: MaybeRefOrGetter<string>) {
   return useApiQuery<ProductsIdPricesGet200Response>(
     () => ['product-prices', toValue(id)],
-    (api) => rawJson(api.prices.productsIdPricesGetRaw({ id: toValue(id) })),
+    async (api) => {
+      const res = await rawJson<{ data?: Record<string, any>[] }>(
+        api.prices.productsIdPricesGetRaw({ id: toValue(id) }),
+      )
+      return { data: (res.data ?? []).map(normalizeProductPrice) }
+    },
   )
 }
 
