@@ -48,10 +48,26 @@ export function useProduct(id: MaybeRefOrGetter<string>) {
   )
 }
 
+/**
+ * L'endpoint /products/:id/stock n'existe pas côté backend (404). Le stock
+ * d'un produit se lit dans /stock/summary, agrégé par productId. On filtre
+ * l'entrée correspondante. Clé tolérante (productId réel ou product.id mock).
+ */
 export function useProductStock(id: MaybeRefOrGetter<string>) {
   return useApiQuery<ProductStockSummary>(
     () => ['product-stock', toValue(id)],
-    (api) => rawJson(api.products.productsIdStockGetRaw({ id: toValue(id) })),
+    async (api) => {
+      const res = await rawJson<{ data?: Record<string, any>[] }>(
+        api.stock.stockSummaryGetRaw({}),
+      )
+      const pid = toValue(id)
+      const item = (res.data ?? []).find((s) => (s.productId ?? s.product?.id) === pid)
+      return {
+        totalQuantity: item?.totalQuantity ?? 0,
+        totalWeightGrams: item?.totalWeightGrams ?? 0,
+        lastMovementAt: item?.lastMovementAt ?? null,
+      } as ProductStockSummary
+    },
   )
 }
 
