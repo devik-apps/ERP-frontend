@@ -43,12 +43,12 @@ const stockTotalFormatted = computed(() =>
 
 const stockRefCount = computed(() => stockSummary.value?.data?.length ?? 0)
 
-const salesTotalEuros = computed(() => {
-  const cents = (salesData.value?.data ?? []).reduce((s, v) => s + (v.totalAmount ?? 0), 0)
-  return Math.round(cents / 100)
+const salesTotal = computed(() => {
+  const total = (salesData.value?.data ?? []).reduce((s, v) => s + (v.totalAmount ?? 0), 0)
+  return Math.round(total)
 })
 
-const salesTotalFormatted = computed(() => frFR(salesTotalEuros.value))
+const salesTotalFormatted = computed(() => frFR(salesTotal.value))
 
 const salesTicketCount = computed(() => salesData.value?.data?.length ?? 0)
 
@@ -67,7 +67,7 @@ const salesSeriesTotal = computed(() =>
 )
 
 const salesSeriesTotalFormatted = computed(() =>
-  frFR(salesSeriesTotal.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+  frFR(salesSeriesTotal.value, { maximumFractionDigits: 0 }),
 )
 
 const shortDayFmt = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short' })
@@ -79,8 +79,8 @@ function fmtAxisDate(i: number) {
 }
 
 function fmtAxisEuros(v: number) {
-  if (v >= 1000) return `${frFR(v / 1000, { maximumFractionDigits: 1 })} k€`
-  return `${frFR(v, { maximumFractionDigits: 0 })} €`
+  if (v >= 1000) return `${frFR(v / 1000, { maximumFractionDigits: 1 })} k Ar`
+  return `${frFR(v, { maximumFractionDigits: 0 })} Ar`
 }
 
 const filteredMovements = computed(() => {
@@ -136,7 +136,7 @@ function fmtWeight(g?: number) {
         <div class="metric-label">Ventes du jour</div>
         <div class="metric-value">
           <span class="metric-num">{{ salesTotalFormatted }}</span>
-          <span class="metric-unit">€</span>
+          <span class="metric-unit">Ar</span>
         </div>
         <div class="metric-foot">
           <span class="metric-hint">{{ salesTicketCount }} tickets</span>
@@ -174,7 +174,7 @@ function fmtWeight(g?: number) {
         </div>
         <div class="sales-chart-total">
           <span class="metric-num">{{ salesSeriesTotalFormatted }}</span>
-          <span class="metric-unit">€</span>
+          <span class="metric-unit">Ar</span>
         </div>
       </div>
       <LineChart

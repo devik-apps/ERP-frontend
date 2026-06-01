@@ -112,7 +112,10 @@ describe('ErpProductDetail — tableau des prix', () => {
     const first = w.findAll('.product-prices tbody tr')[0]!
     const cells = first.findAll('td')
     expect(cells[0]!.text()).toBe('Détail')
-    expect(cells[1]!.text()).toContain('€/kg')
+    expect(cells[1]!.text()).toContain('Ar/kg')
+    // Le backend renvoie le prix en PascalCase (Amount). La normalisation doit
+    // exposer le montant : sans elle, l'UI afficherait « 0 Ar/kg ».
+    expect(cells[1]!.text()).toContain('3 800')
   })
 })
 
@@ -145,7 +148,7 @@ describe('ErpProductDetail — gestion des prix', () => {
     await flushPromises()
     expect(w.find('.modal-backdrop').exists()).toBe(true)
     const amountInput = w.find('input[name="amount"]').element as HTMLInputElement
-    expect(amountInput.value).toBe('38')
+    expect(amountInput.value).toBe('3800')
   })
 
   it('ouvre la confirmation de suppression', async () => {

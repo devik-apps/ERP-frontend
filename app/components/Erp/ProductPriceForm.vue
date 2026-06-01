@@ -19,8 +19,8 @@ const packagings = computed(() => packagingData.value?.data ?? [])
 const mutation = useUpsertProductPrice()
 const packagingMutation = useUpsertPackaging()
 
-// Saisie utilisateur en euros (UI) — l'API stocke les montants en centimes.
-const amountEuros = ref<number>(props.price?.amount != null ? props.price.amount / 100 : 0)
+// Montant en Ariary (entier, sans subdivision) — stocké tel quel par l'API.
+const amount = ref<number>(props.price?.amount ?? 0)
 const weightGrams = ref<number>(props.price?.weightGrams ?? 1000)
 const packagingId = ref<string>(props.price?.packaging?.id ?? '')
 
@@ -35,7 +35,7 @@ watch(packagings, (list) => {
 }, { immediate: true })
 
 const canSubmit = computed(
-  () => amountEuros.value > 0
+  () => amount.value > 0
     && weightGrams.value > 0
     && packagingMode.value === 'select'
     && !mutation.isPending.value,
@@ -73,14 +73,13 @@ function savePackaging() {
 function onSubmit() {
   if (!canSubmit.value) return
   const id = props.price?.id ?? generateUUID()
-  const amountCents = Math.round(amountEuros.value * 100)
   mutation.mutate(
     {
       id,
       payload: {
         productId: props.productId,
         packagingId: packagingId.value || null,
-        amount: amountCents,
+        amount: Math.round(amount.value),
         weightGrams: weightGrams.value,
         validFrom: new Date(),
       },
@@ -146,15 +145,15 @@ function onSubmit() {
 
     <div class="field-row">
       <label class="field" data-field="amount">
-        <span class="field-label">Prix (€)</span>
+        <span class="field-label">Prix (Ar)</span>
         <input
-          v-model.number="amountEuros"
+          v-model.number="amount"
           name="amount"
           type="number"
           min="0"
-          step="0.01"
-          inputmode="decimal"
-          placeholder="0,00"
+          step="1"
+          inputmode="numeric"
+          placeholder="0"
         >
       </label>
 

@@ -47,12 +47,12 @@ describe('ErpDashboard — métriques API', () => {
     expect(stock.find('.metric-hint').text()).toBe('2 références')
   })
 
-  it('ventes agrégées depuis /sales (1 351 €, 12 tickets)', async () => {
+  it('ventes agrégées depuis /sales (135 110 Ar, 12 tickets)', async () => {
     const w = await mountSuspended(ErpDashboard)
     await flushPromises()
     const sales = w.findAll('.metric')[1]!
-    expect(sales.find('.metric-num').text()).toBe('1 351')
-    expect(sales.find('.metric-unit').text()).toBe('€')
+    expect(sales.find('.metric-num').text()).toBe('135 110')
+    expect(sales.find('.metric-unit').text()).toBe('Ar')
     expect(sales.find('.metric-hint').text()).toBe('12 tickets')
   })
 
@@ -170,11 +170,11 @@ describe('ErpDashboard — graphique CA 7 jours', () => {
     expect(w.find('.sales-chart-card .sales-chart').exists()).toBe(true)
   })
 
-  it('affiche le total CA cumulé sur les 7 jours (1 351,10 €)', async () => {
+  it('affiche le total CA cumulé sur les 7 jours (135 110 Ar)', async () => {
     const w = await mountSuspended(ErpDashboard)
     await flushPromises()
     const card = w.find('.sales-chart-card')
-    expect(card.find('.sales-chart-total').text()).toContain('1 351,10')
+    expect(card.find('.sales-chart-total').text()).toContain('135 110')
   })
 })
 
