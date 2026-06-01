@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useHead({ title: 'Catalogue produits — Poissonnerie du Vieux Port' })
+useHead({ title: 'Catalogue produits — Fishoo' })
 </script>
 
 <template>

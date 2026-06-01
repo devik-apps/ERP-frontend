@@ -41,7 +41,7 @@ async function onLogout() {
       >
         <Menu :size="16" :stroke-width="1.5" />
       </button>
-      <span>Poissonnerie du Vieux Port</span>
+      <span>Fishoo</span>
       <span class="sep">/</span>
       <span class="cur">{{ currentLabel }}</span>
     </div>

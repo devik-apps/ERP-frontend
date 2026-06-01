@@ -5,7 +5,7 @@ import ErpTopbar from '~/components/Erp/Topbar.vue'
 describe('ErpTopbar', () => {
   it('affiche le fil d\'ariane avec l\'enseigne', async () => {
     const w = await mountSuspended(ErpTopbar, { route: '/dashboard' })
-    expect(w.find('.crumbs').text()).toContain('Poissonnerie du Vieux Port')
+    expect(w.find('.crumbs').text()).toContain('Fishoo')
   })
 
   it('affiche la section active dans le fil d\'ariane selon la route', async () => {

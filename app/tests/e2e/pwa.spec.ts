@@ -31,7 +31,7 @@ test.describe('PWA — manifest servi', () => {
     const res = await request.get('/manifest.webmanifest')
     expect(res.ok()).toBe(true)
     const body = await res.json()
-    expect(body.name).toContain('Poissonnerie')
+    expect(body.name).toContain('Fishoo')
     expect(body.display).toBe('standalone')
   })
 
