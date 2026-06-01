@@ -43,8 +43,8 @@ function isActive(item: typeof navItems[number]) {
         </svg>
       </span>
       <div>
-        <div class="sb-brand-name">Poissonnerie</div>
-        <div class="sb-brand-sub">du Vieux Port</div>
+        <div class="sb-brand-name">Fishoo</div>
+        <div class="sb-brand-sub">ERP</div>
       </div>
     </div>
 

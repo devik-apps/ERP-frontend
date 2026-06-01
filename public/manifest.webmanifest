@@ -1,7 +1,7 @@
 {
-  "name": "Poissonnerie du Vieux Port — ERP",
-  "short_name": "Poissonnerie",
-  "description": "ERP de gestion pour la Poissonnerie du Vieux Port — stocks, ventes, transformations.",
+  "name": "Fishoo — ERP",
+  "short_name": "Fishoo",
+  "description": "ERP de gestion pour Fishoo — stocks, ventes, transformations.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

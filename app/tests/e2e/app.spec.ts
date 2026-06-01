@@ -12,8 +12,8 @@ test.describe('ERP Poissonnerie', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('le titre contient "Poissonnerie"', async ({ page }) => {
-    await expect(page).toHaveTitle(/Poissonnerie/)
+  test('le titre contient "Fishoo"', async ({ page }) => {
+    await expect(page).toHaveTitle(/Fishoo/)
   })
 })
 
@@ -27,7 +27,7 @@ test.describe('Layout — sidebar', () => {
   })
 
   test('affiche le nom de l\'enseigne', async ({ page }) => {
-    await expect(page.locator('.sb-brand-name')).toHaveText('Poissonnerie')
+    await expect(page.locator('.sb-brand-name')).toHaveText('Fishoo')
   })
 
   test('contient les liens de navigation principaux', async ({ page }) => {

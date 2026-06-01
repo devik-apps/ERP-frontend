@@ -5,8 +5,8 @@ import ErpSidebar from '~/components/Erp/Sidebar.vue'
 describe('ErpSidebar', () => {
   it('affiche le nom de l\'enseigne', async () => {
     const w = await mountSuspended(ErpSidebar)
-    expect(w.find('.sb-brand-name').text()).toBe('Poissonnerie')
-    expect(w.find('.sb-brand-sub').text()).toBe('du Vieux Port')
+    expect(w.find('.sb-brand-name').text()).toBe('Fishoo')
+    expect(w.find('.sb-brand-sub').text()).toBe('ERP')
   })
 
   it('affiche tous les items de navigation actifs comme des liens', async () => {

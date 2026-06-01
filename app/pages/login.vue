@@ -35,7 +35,7 @@ async function onSubmit() {
           </svg>
         </span>
         <div>
-          <div class="login-title">Poissonnerie du Vieux Port</div>
+          <div class="login-title">Fishoo</div>
           <div class="login-subtitle">Connexion à l'ERP</div>
         </div>
       </div>
@@ -48,7 +48,7 @@ async function onSubmit() {
             type="email"
             autocomplete="email"
             required
-            placeholder="vous@poissonnerie.fr"
+            placeholder="vous@fishoo.mg"
           />
         </label>
 
