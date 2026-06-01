@@ -77,7 +77,7 @@ describe('ErpProductDetail — bloc stock', () => {
     const w = await mount()
     const stock = w.find('.product-stock-card')
     const labels = stock.findAll('.stock-item-label').map(n => n.text())
-    expect(labels).toEqual(['Stock total', 'Poids'])
+    expect(labels).toEqual(['Quantité', 'Poids'])
   })
 
   it('affiche une barre de progression du stock', async () => {
