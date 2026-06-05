@@ -1448,6 +1448,29 @@ button { font-family: inherit; cursor: pointer; }
   accent-color: var(--slate);
 }
 
+.sale-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sale-line {
+  display: grid;
+  grid-template-columns: 1.6fr 1.6fr 0.8fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.sale-line .icon-btn {
+  margin-bottom: 2px;
+}
+
+@media (max-width: 768px) {
+  .sale-line {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .modal-error {
   font-size: 12px;
   color: #b4451f;
