@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import { useProducts, productStatus } from '~/composables/useProducts'
-import { useStockMovements } from '~/composables/useStock'
+import { productStatus } from '~/composables/useProducts'
+import { useProductsWithStock, useEnrichedMovements } from '~/composables/useStock'
 
-const productsQ = useProducts()
-const movementsQ = useStockMovements()
-const { data: productsData } = productsQ
-const { data: movementsData } = movementsQ
-
-const hasApiError = computed(() => productsQ.isError.value || movementsQ.isError.value)
-
-const products = computed(() => productsData.value?.data ?? [])
-const movements = computed(() => movementsData.value?.data ?? [])
+const { products } = useProductsWithStock()
+const { movements } = useEnrichedMovements()
 
 function fmtKg(n: number): string {
   return n.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
@@ -40,10 +33,6 @@ function badgeClass(p: { isActive?: boolean; currentStock?: number }) {
         <div class="sec-sub">Vue synthétique en lecture seule — modifier le stock depuis la fiche produit</div>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="card table-card">
       <div class="table-head">

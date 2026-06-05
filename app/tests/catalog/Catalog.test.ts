@@ -151,16 +151,3 @@ describe('ErpCatalog — création produit', () => {
     expect(w.find('input[name="label"]').exists()).toBe(true)
   })
 })
-
-describe('ErpCatalog — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
-    server.use(
-      http.get('https://api.erp.local/v1/products', () => HttpResponse.error()),
-    )
-    const w = await mount()
-    await flushPromises()
-    const banner = w.find('.api-state.is-error')
-    expect(banner.exists()).toBe(true)
-    expect(banner.text()).toContain('API indisponible')
-  })
-})

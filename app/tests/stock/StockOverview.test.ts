@@ -62,13 +62,43 @@ describe('ErpStockOverview — mouvements récents', () => {
   })
 })
 
-describe('ErpStockOverview — état API hors-ligne', () => {
-  it('affiche un bandeau "API indisponible" quand /products échoue', async () => {
+describe('ErpStockOverview — jonction stock (forme backend réel)', () => {
+  it('affiche le stock depuis /stock/summary même si currentStock vaut 0', async () => {
     server.use(
-      http.get('https://api.erp.local/v1/products', () => HttpResponse.error()),
+      http.get('https://api.erp.local/v1/products', () =>
+        HttpResponse.json({
+          data: [{ id: 'p1', label: 'Thon', category: { id: 'c1', label: 'Frais' }, isActive: true, currentStock: 0 }],
+          meta: { total: 1, page: 1, limit: 50, totalPages: 1 },
+        }),
+      ),
+      http.get('https://api.erp.local/v1/stock/summary', () =>
+        HttpResponse.json({
+          data: [{ productId: 'p1', totalQuantity: 25, totalWeightGrams: 13500, lastMovementAt: '2026-06-01T00:00:00Z' }],
+        }),
+      ),
     )
     const w = await mount()
-    await flushPromises()
-    expect(w.find('.api-state.is-error').exists()).toBe(true)
+    const row = w.find('[data-table="stock"] tbody tr')
+    expect(row.find('.num').text()).toContain('13,5')
+  })
+
+  it('résout le libellé produit des mouvements depuis productId', async () => {
+    server.use(
+      http.get('https://api.erp.local/v1/products', () =>
+        HttpResponse.json({
+          data: [{ id: 'p1', label: 'Thon', category: { id: 'c1', label: 'Frais' }, isActive: true, currentStock: 0 }],
+          meta: { total: 1, page: 1, limit: 50, totalPages: 1 },
+        }),
+      ),
+      http.get('https://api.erp.local/v1/stock', () =>
+        HttpResponse.json({
+          data: [{ id: 'm1', type: 'entry', productId: 'p1', quantity: 10, weightGrams: 5000, origin: 'manual', isActive: true }],
+          meta: { total: 1, page: 1, limit: 50, totalPages: 1 },
+        }),
+      ),
+    )
+    const w = await mount()
+    const row = w.find('[data-table="movements"] tbody tr')
+    expect(row.find('.strong').text()).toBe('Thon')
   })
 })

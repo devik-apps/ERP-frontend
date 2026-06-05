@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Plus, Search } from 'lucide-vue-next'
-import { useCategories, useProducts, productStatus, type ProductStatus } from '~/composables/useProducts'
+import { useCategories, productStatus, type ProductStatus } from '~/composables/useProducts'
+import { useProductsWithStock } from '~/composables/useStock'
 
 type StatusFilter = 'Tous' | ProductStatus
 
 const categoriesQ = useCategories()
-const productsQ = useProducts()
+const { products, productsQ } = useProductsWithStock()
 const { data: categoriesData } = categoriesQ
 const { data: productsData } = productsQ
-
-const hasApiError = computed(() => categoriesQ.isError.value || productsQ.isError.value)
 
 const search = ref('')
 const activeCategory = ref('Toutes')
@@ -23,7 +22,7 @@ const totalCount = computed(() => productsData.value?.meta?.total ?? 0)
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
-  return (productsData.value?.data ?? []).filter(p => {
+  return products.value.filter(p => {
     if (q && !p.label?.toLowerCase().includes(q)) return false
     if (activeCategory.value !== 'Toutes' && p.category?.label !== activeCategory.value) return false
     if (activeStatus.value !== 'Tous' && productStatus(p) !== activeStatus.value) return false
@@ -57,10 +56,6 @@ function stockFr(n: number) {
         </button>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="catalog-toolbar card">
       <div class="catalog-search">

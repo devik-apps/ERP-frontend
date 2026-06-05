@@ -18,8 +18,6 @@ const { data: product } = productQ
 const { data: stock } = stockQ
 const { data: pricesData } = pricesQ
 
-const hasApiError = computed(() => productQ.isError.value || stockQ.isError.value || pricesQ.isError.value)
-
 const movementOpen = ref(false)
 const editOpen = ref(false)
 const priceFormOpen = ref(false)
@@ -69,8 +67,8 @@ const movementProduct = computed(() => ({
 const prices = computed(() => pricesData.value?.data ?? [])
 
 const stockItems = computed(() => [
-  { label: 'Stock total', value: stock.value?.totalQuantity ?? 0,             unit: 'kg', tone: 'is-total'     },
-  { label: 'Poids',       value: (stock.value?.totalWeightGrams ?? 0) / 1000, unit: 'kg', tone: 'is-available' },
+  { label: 'Quantité', text: frInt(stock.value?.totalQuantity ?? 0),           unit: '',   tone: 'is-total'     },
+  { label: 'Poids',    text: fr((stock.value?.totalWeightGrams ?? 0) / 1000),  unit: 'kg', tone: 'is-available' },
 ])
 
 const stockRatio = computed(() => {
@@ -81,6 +79,10 @@ const stockRatio = computed(() => {
 
 function fr(n: number) {
   return n.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+}
+
+function frInt(n: number) {
+  return n.toLocaleString('fr-FR', { maximumFractionDigits: 0 })
 }
 
 function formatPrice(amount: number, weightGrams: number): string {
@@ -114,10 +116,6 @@ function badgeClass() {
         </button>
       </div>
     </header>
-
-    <div v-if="hasApiError" class="api-state is-error" role="alert">
-      <span class="api-state-dot" /> API indisponible — affichage en mode hors ligne
-    </div>
 
     <div class="product-grid">
       <article class="card product-summary">
@@ -164,7 +162,7 @@ function badgeClass() {
           >
             <div class="stock-item-label">{{ s.label }}</div>
             <div class="stock-item-value">
-              <span class="stock-item-num">{{ fr(s.value) }}</span>
+              <span class="stock-item-num">{{ s.text }}</span>
               <span class="stock-item-unit">{{ s.unit }}</span>
             </div>
           </div>
