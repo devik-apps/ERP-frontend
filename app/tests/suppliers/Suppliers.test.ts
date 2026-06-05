@@ -67,4 +67,14 @@ describe('ErpSuppliers', () => {
     await w.vm.$nextTick()
     expect(w.find('.tbl tbody tr.is-empty').text()).toContain('Aucun fournisseur')
   })
+
+  it('le clic sur "Nouveau fournisseur" ouvre la modale de création', async () => {
+    const w = await mountSuspended(ErpSuppliers)
+    expect(w.find('.modal').exists()).toBe(false)
+    const btn = w.findAll('.sec-right .btn').find(b => b.text().includes('Nouveau fournisseur'))
+    await btn!.trigger('click')
+    await w.vm.$nextTick()
+    expect(w.find('.modal').exists()).toBe(true)
+    expect(w.find('.modal-title').text()).toContain('Nouveau fournisseur')
+  })
 })

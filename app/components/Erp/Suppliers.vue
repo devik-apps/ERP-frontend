@@ -12,6 +12,8 @@ const suppliersQ = useSuppliers()
 const { data: suppliersData } = suppliersQ
 const allSuppliers = computed(() => (suppliersData.value?.data ?? []) as Supplier[])
 
+const showCreate = ref(false)
+
 const filteredSuppliers = computed(() => {
   if (statusFilter.value === 'Tous') return allSuppliers.value
   const wantActive = statusFilter.value === 'Actif'
@@ -50,11 +52,15 @@ function shortId(id?: string): string {
         <button class="btn btn-ghost">
           <FileBarChart :size="14" :stroke-width="1.5" /> Exporter
         </button>
-        <button class="btn btn-primary">
+        <button class="btn btn-primary" @click="showCreate = true">
           <Plus :size="14" :stroke-width="1.5" /> Nouveau fournisseur
         </button>
       </div>
     </header>
+
+    <UiModal :open="showCreate" title="Nouveau fournisseur" @close="showCreate = false">
+      <ErpSupplierForm @submitted="showCreate = false" @cancel="showCreate = false" />
+    </UiModal>
 
     <div class="metric-grid">
       <div v-for="m in metrics" :key="m.label" class="card metric">

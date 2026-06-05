@@ -224,6 +224,22 @@ export const handlers = [
     })
   }),
 
+  http.put('https://api.erp.local/v1/suppliers/:id', async ({ request, params }) => {
+    const body = await request.json() as {
+      name: string; contact?: string | null; description?: string | null; isActive?: boolean
+    }
+    return HttpResponse.json(
+      {
+        id: params['id'],
+        name: body.name,
+        contact: body.contact ?? null,
+        description: body.description ?? null,
+        isActive: body.isActive ?? true,
+      },
+      { status: 201 },
+    )
+  }),
+
   http.put('https://api.erp.local/v1/stock/:id', async ({ request, params }) => {
     const body = await request.json() as {
       type: string; productId: string; quantity: number; weightGrams?: number; description?: string
