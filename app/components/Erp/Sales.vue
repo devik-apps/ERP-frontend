@@ -1,44 +1,33 @@
 <script setup lang="ts">
 import { Plus, Receipt } from 'lucide-vue-next'
-import { useSales, useCreateSale, type SaleSegment, type SaleRow } from '~/composables/useSales'
+import { useSales } from '~/composables/useSales'
+import type { SaleSummary } from '@tsanta22kyle/erp-client'
 
-type SegmentFilter = 'Tous' | SaleSegment
+type StatusFilter = 'Tous' | 'Actif' | 'Inactif'
 
-const SALE_SEGMENTS: SaleSegment[] = ['Comptoir', 'Pro', 'Restaurant', 'Gros']
-
-const filter = ref<SegmentFilter>('Tous')
-const filterChips: SegmentFilter[] = ['Tous', ...SALE_SEGMENTS]
+const statusFilter = ref<StatusFilter>('Tous')
+const statusChips: StatusFilter[] = ['Tous', 'Actif', 'Inactif']
 
 const salesQ = useSales()
 const { data: salesData } = salesQ
-const allSales = computed(() => (salesData.value?.data ?? []) as SaleRow[])
+const allSales = computed(() => (salesData.value?.data ?? []) as SaleSummary[])
 
 const filteredSales = computed(() => {
-  if (filter.value === 'Tous') return allSales.value
-  return allSales.value.filter(s => s.segment === filter.value)
+  if (statusFilter.value === 'Tous') return allSales.value
+  const wantActive = statusFilter.value === 'Actif'
+  return allSales.value.filter(s => Boolean(s.isActive) === wantActive)
 })
 
-const mutation = useCreateSale()
+const showCreate = ref(false)
 
-const fmtInt = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/ /g, ' ')
+const fmtInt = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/ /g, ' ')
 
 const metrics = computed(() => {
   const list = allSales.value
   const ticketCount = list.length
   const total = list.reduce((acc, s) => acc + (s.totalAmount ?? 0), 0)
   const avg = ticketCount > 0 ? total / ticketCount : 0
-
-  const counts = new Map<SaleSegment, number>()
-  for (const s of list) {
-    if (!s.segment) continue
-    counts.set(s.segment, (counts.get(s.segment) ?? 0) + 1)
-  }
-  let topSegment: SaleSegment | '' = ''
-  let topCount = 0
-  for (const [seg, n] of counts) {
-    if (n > topCount) { topSegment = seg; topCount = n }
-  }
-  const topShare = ticketCount > 0 ? Math.round((topCount / ticketCount) * 100) : 0
+  const items = list.reduce((acc, s) => acc + (s.itemCount ?? 0), 0)
 
   return [
     {
@@ -60,19 +49,13 @@ const metrics = computed(() => {
       hint: `${ticketCount} ticket${ticketCount > 1 ? 's' : ''}`,
     },
     {
-      label: 'Segment principal',
-      value: String(topShare),
-      unit: '%',
-      hint: topSegment || '—',
+      label: 'Articles vendus',
+      value: fmtInt(items),
+      unit: '',
+      hint: 'toutes ventes',
     },
   ]
 })
-
-function statusClass(status?: string): string {
-  if (status === 'paid')      return 'is-active'
-  if (status === 'pending')   return 'is-low'
-  return 'is-inactive'
-}
 
 function fmtDate(iso?: string | Date): string {
   if (!iso) return '—'
@@ -102,12 +85,15 @@ function fmtAmount(amount?: number): string {
         <button class="btn btn-ghost">
           <Receipt :size="14" :stroke-width="1.5" /> Exporter
         </button>
-        <button class="btn btn-primary" :disabled="mutation.isPending.value">
+        <button class="btn btn-primary" @click="showCreate = true">
           <Plus :size="14" :stroke-width="1.5" /> Nouveau ticket
         </button>
       </div>
     </header>
 
+    <UiModal :open="showCreate" title="Nouveau ticket" @close="showCreate = false">
+      <ErpSaleForm @submitted="showCreate = false" @cancel="showCreate = false" />
+    </UiModal>
 
     <div class="metric-grid">
       <div v-for="m in metrics" :key="m.label" class="card metric">
@@ -126,28 +112,30 @@ function fmtAmount(amount?: number): string {
       <div class="table-head">
         <div>
           <div class="card-title">Tickets</div>
-          <div class="card-sub">12 dernières ventes</div>
+          <div class="card-sub">
+            {{ filteredSales.length }} ticket{{ filteredSales.length > 1 ? 's' : '' }}
+          </div>
         </div>
-        <div class="table-actions">
-          <button
-            v-for="chip in filterChips"
-            :key="chip"
-            class="chip"
-            :class="{ 'is-active': filter === chip }"
-            @click="filter = chip"
-          >
-            {{ chip }}
-          </button>
+        <div class="table-filters">
+          <div class="table-actions" data-filter="status">
+            <button
+              v-for="chip in statusChips"
+              :key="chip"
+              class="chip"
+              :class="{ 'is-active': statusFilter === chip }"
+              @click="statusFilter = chip"
+            >
+              {{ chip }}
+            </button>
+          </div>
         </div>
       </div>
 
       <table class="tbl">
         <thead>
           <tr>
-            <th>N</th>
-            <th>Heure</th>
-            <th>Segment</th>
-            <th>Produit principal</th>
+            <th>N°</th>
+            <th>Date</th>
             <th class="num">Articles</th>
             <th class="num">Montant</th>
             <th>Statut</th>
@@ -157,18 +145,16 @@ function fmtAmount(amount?: number): string {
           <tr v-for="s in filteredSales" :key="s.id">
             <td class="strong">{{ s.id }}</td>
             <td class="muted">{{ fmtDate(s.saleDate) }}</td>
-            <td>{{ s.segment }}</td>
-            <td class="muted">{{ s.top }}</td>
             <td class="num">{{ s.itemCount }}</td>
             <td class="num strong">{{ fmtAmount(s.totalAmount) }}</td>
             <td>
-              <span class="badge" :class="statusClass(s.status)">
-                <span class="badge-dot" /> {{ s.status }}
+              <span class="badge" :class="s.isActive ? 'is-active' : 'is-inactive'">
+                <span class="badge-dot" /> {{ s.isActive ? 'Actif' : 'Inactif' }}
               </span>
             </td>
           </tr>
           <tr v-if="!filteredSales.length" class="is-empty">
-            <td colspan="7" class="muted">Aucun ticket</td>
+            <td colspan="5" class="muted">Aucun ticket</td>
           </tr>
         </tbody>
       </table>

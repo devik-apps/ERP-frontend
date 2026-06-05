@@ -30,32 +30,24 @@ describe('ErpSales -- metriques', () => {
     expect(w.findAll('.metric').length).toBe(4)
   })
 
-  it('affiche les 4 labels attendus', async () => {
+  it('affiche les 4 labels attendus (champs réels uniquement)', async () => {
     const w = await mountSuspended(ErpSales)
     const labels = w.findAll('.metric-label').map(el => el.text())
     expect(labels[0]).toContain('affaires')
     expect(labels[1]).toContain('Tickets')
     expect(labels[2]).toContain('Panier')
-    expect(labels[3]).toContain('Segment')
+    expect(labels[3]).toContain('Articles')
   })
 
-  it('affiche les valeurs principales agrégées depuis /sales', async () => {
+  it('affiche les valeurs agrégées depuis /sales', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
     const nums = w.findAll('.metric-num').map(el => el.text())
-    expect(nums[0]).toBe('135 110')
+    expect(nums[0]).toBe('135 110')
     expect(nums[1]).toBe('12')
-    expect(nums[2]).toBe('11 259')
-    expect(nums[3]).toBe('50')
-  })
-
-  it('le segment principal affiche Comptoir comme libellé', async () => {
-    const w = await mountSuspended(ErpSales)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const hints = w.findAll('.metric-hint').map(el => el.text())
-    expect(hints[3]).toBe('Comptoir')
+    expect(nums[2]).toBe('11 259')
+    expect(nums[3]).toBe('51')
   })
 
   it('les KPIs valent 0 quand /sales renvoie un tableau vide', async () => {
@@ -75,57 +67,33 @@ describe('ErpSales -- metriques', () => {
   })
 })
 
-describe('ErpSales -- filtres par segment', () => {
-  it('expose 5 chips de filtre, Tous actif par defaut', async () => {
+describe('ErpSales -- filtres par statut', () => {
+  it('expose 3 chips de filtre, Tous actif par defaut', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
-    const chips = w.findAll('.chip')
-    expect(chips).toHaveLength(5)
+    const chips = w.findAll('[data-filter="status"] .chip')
+    expect(chips).toHaveLength(3)
     const labels = chips.map(c => c.text())
-    expect(labels).toEqual(['Tous', 'Comptoir', 'Pro', 'Restaurant', 'Gros'])
+    expect(labels).toEqual(['Tous', 'Actif', 'Inactif'])
     expect(chips[0]!.classes()).toContain('is-active')
   })
 
-  it('filtre les ventes Comptoir au clic', async () => {
+  it('le filtre Actif réduit à 11 lignes', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
-    const chips = w.findAll('.chip')
-    await chips[1]!.trigger('click')
-    await w.vm.$nextTick()
-    expect(chips[1]!.classes()).toContain('is-active')
-    expect(chips[0]!.classes()).not.toContain('is-active')
-    expect(w.findAll('.tbl tbody tr').length).toBe(6)
+    await w.find('[data-filter="status"] .chip:nth-child(2)').trigger('click')
+    expect(w.findAll('.tbl tbody tr').length).toBe(11)
   })
 
-  it('filtre les ventes Pro au clic', async () => {
+  it('le filtre Inactif réduit à 1 ligne', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
-    const chips = w.findAll('.chip')
-    await chips[2]!.trigger('click')
-    await w.vm.$nextTick()
-    expect(w.findAll('.tbl tbody tr').length).toBe(2)
-  })
-
-  it('filtre les ventes Restaurant au clic', async () => {
-    const w = await mountSuspended(ErpSales)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const chips = w.findAll('.chip')
-    await chips[3]!.trigger('click')
-    await w.vm.$nextTick()
-    expect(w.findAll('.tbl tbody tr').length).toBe(3)
-  })
-
-  it('filtre les ventes Gros au clic', async () => {
-    const w = await mountSuspended(ErpSales)
-    await flushPromises()
-    await w.vm.$nextTick()
-    const chips = w.findAll('.chip')
-    await chips[4]!.trigger('click')
-    await w.vm.$nextTick()
+    const chips = w.findAll('[data-filter="status"] .chip')
+    const inactif = chips.find(c => c.text() === 'Inactif')
+    await inactif!.trigger('click')
     expect(w.findAll('.tbl tbody tr').length).toBe(1)
   })
 })
@@ -145,33 +113,38 @@ describe('ErpSales -- journal des tickets', () => {
     expect(w.findAll('.tbl tbody tr').length).toBe(12)
   })
 
-  it('contient les 7 colonnes', async () => {
+  it('contient les 5 colonnes (champs réels)', async () => {
     const w = await mountSuspended(ErpSales)
     const headers = w.findAll('.tbl thead th')
-    expect(headers).toHaveLength(7)
-    expect(headers[2]!.text()).toBe('Segment')
-    expect(headers[4]!.text()).toBe('Articles')
+    expect(headers).toHaveLength(5)
+    expect(headers[2]!.text()).toBe('Articles')
+    expect(headers[3]!.text()).toBe('Montant')
   })
 
-  it('affiche un badge is-active pour les ventes payees', async () => {
+  it('affiche un badge is-active pour les ventes actives', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
     expect(w.find('.badge.is-active').exists()).toBe(true)
   })
 
-  it('affiche un badge is-low pour les ventes en attente', async () => {
-    const w = await mountSuspended(ErpSales)
-    await flushPromises()
-    await w.vm.$nextTick()
-    expect(w.find('.badge.is-low').exists()).toBe(true)
-  })
-
-  it('affiche un badge is-inactive pour les ventes annulees', async () => {
+  it('affiche un badge is-inactive pour les ventes inactives', async () => {
     const w = await mountSuspended(ErpSales)
     await flushPromises()
     await w.vm.$nextTick()
     expect(w.find('.badge.is-inactive').exists()).toBe(true)
+  })
+})
+
+describe('ErpSales — création de ticket', () => {
+  it('le clic sur "Nouveau ticket" ouvre la modale', async () => {
+    const w = await mountSuspended(ErpSales)
+    expect(w.find('.modal').exists()).toBe(false)
+    const btn = w.findAll('.sec-right .btn').find(b => b.text().includes('Nouveau ticket'))
+    await btn!.trigger('click')
+    await w.vm.$nextTick()
+    expect(w.find('.modal').exists()).toBe(true)
+    expect(w.find('.modal-title').text()).toContain('Nouveau ticket')
   })
 })
 

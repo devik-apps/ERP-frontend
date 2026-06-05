@@ -6,7 +6,7 @@ import type { ErpApi } from '~/plugins/api.client'
 /**
  * Récupère la charge JSON brute renvoyée par le serveur, sans passer par les
  * convertisseurs FromJSON du SDK (qui suppriment les champs non décrits dans
- * l'OpenAPI — segment, top, status… utilisés côté UI uniquement).
+ * l'OpenAPI et réécrivent la casse PascalCase du backend en camelCase).
  */
 export async function rawJson<T>(p: Promise<ApiResponse<T>>): Promise<T> {
   const res = await p
