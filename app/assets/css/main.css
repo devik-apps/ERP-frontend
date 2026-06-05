@@ -1030,6 +1030,14 @@ button { font-family: inherit; cursor: pointer; }
   font-weight: 500;
 }
 
+.field-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  font-weight: 400;
+  opacity: 0.8;
+}
+
 .movement-form input,
 .movement-form select,
 .movement-form textarea {

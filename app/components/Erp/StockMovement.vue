@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ArrowDownToLine, ArrowUpFromLine, Save } from 'lucide-vue-next'
 import { useCreateStockMovement } from '~/composables/useStock'
+import { useSuppliers } from '~/composables/useSuppliers'
 import { generateUUID } from '~/utils/uuid'
+import type { Supplier } from '@tsanta22kyle/erp-client'
 
 type MovementType = 'Entrée' | 'Sortie'
 
@@ -11,16 +13,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{ submitted: []; cancel: [] }>()
 
-const OPERATORS = ['Marc', 'Léa', 'Atelier'] as const
-
 const mutation = useCreateStockMovement()
+
+const suppliersQ = useSuppliers()
+const suppliers = computed(() => (suppliersQ.data.value?.data ?? []) as Supplier[])
 
 const type = ref<MovementType>('Entrée')
 const qty = ref<number>(0)
 const unitWeight = ref<number>(0)
-const origin = ref<string>('')
-const operator = ref<(typeof OPERATORS)[number]>('Marc')
-const note = ref<string>('')
+const supplierId = ref<string>('')
+
+// Le fournisseur n'a de sens que pour une réception (Entrée).
+const isEntry = computed(() => type.value === 'Entrée')
+watch(isEntry, (entry) => {
+  if (!entry) supplierId.value = ''
+})
 
 const segments: { value: MovementType; label: string; icon: typeof ArrowDownToLine }[] = [
   { value: 'Entrée', label: 'Entrée', icon: ArrowDownToLine },
@@ -56,15 +63,9 @@ function fmtKg(n: number): string {
   })
 }
 
-const originLabel = computed(() => (type.value === 'Entrée' ? 'Origine' : 'Destination'))
-const originPlaceholder = computed(
-  () => (type.value === 'Entrée' ? 'Mareyeur, fournisseur, atelier…' : 'Comptoir, livraison, atelier…'),
-)
-
 function onSubmit() {
   if (!canSubmit.value) return
   const uuid = generateUUID()
-  const description = note.value ? `[${operator.value}] ${note.value}` : `[${operator.value}]`
   mutation.mutate(
     {
       id: uuid,
@@ -73,15 +74,15 @@ function onSubmit() {
         productId: props.product.id,
         quantity: qty.value,
         weightGrams: totalGrams.value,
-        description,
+        // Fournisseur facultatif, uniquement pour une réception.
+        supplierId: isEntry.value && supplierId.value ? supplierId.value : null,
       },
     },
     {
       onSuccess: () => {
         qty.value = 0
         unitWeight.value = 0
-        origin.value = ''
-        note.value = ''
+        supplierId.value = ''
         type.value = 'Entrée'
         emit('submitted')
       },
@@ -128,23 +129,12 @@ function onSubmit() {
       </label>
     </div>
 
-    <div class="field-row">
-      <label class="field" data-field="origin">
-        <span class="field-label">{{ originLabel }}</span>
-        <input v-model="origin" name="origin" type="text" :placeholder="originPlaceholder">
-      </label>
-
-      <label class="field" data-field="operator">
-        <span class="field-label">Opérateur</span>
-        <select v-model="operator" name="operator">
-          <option v-for="o in OPERATORS" :key="o" :value="o">{{ o }}</option>
-        </select>
-      </label>
-    </div>
-
-    <label class="field" data-field="note">
-      <span class="field-label">Note</span>
-      <textarea v-model="note" name="note" rows="2" placeholder="Détail de l'opération (optionnel)" />
+    <label v-if="isEntry" class="field" data-field="supplier">
+      <span class="field-label">Fournisseur <span class="field-optional">(facultatif)</span></span>
+      <select v-model="supplierId" name="supplier">
+        <option value="">— Aucun —</option>
+        <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
+      </select>
     </label>
 
     <dl class="movement-recap">

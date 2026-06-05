@@ -41,20 +41,34 @@ describe('ErpStockMovement — segments de type', () => {
 })
 
 describe('ErpStockMovement — champs du formulaire', () => {
-  it('expose quantité, poids unitaire, origine, opérateur, note', async () => {
+  it('expose quantité et poids unitaire, sans opérateur, note ni origine mock', async () => {
     const w = await mount()
     expect(w.find('input[name="qty"]').attributes('type')).toBe('number')
     expect(w.find('input[name="unitWeight"]').attributes('type')).toBe('number')
-    expect(w.find('input[name="origin"]').exists()).toBe(true)
-    expect(w.find('select[name="operator"]').exists()).toBe(true)
-    expect(w.find('textarea[name="note"]').exists()).toBe(true)
+    expect(w.find('input[name="origin"]').exists()).toBe(false)
+    expect(w.find('select[name="operator"]').exists()).toBe(false)
+    expect(w.find('textarea[name="note"]').exists()).toBe(false)
   })
 
-  it('renomme origine en destination quand Sortie est sélectionné', async () => {
+  it('expose un sélecteur Fournisseur pour une Entrée, alimenté par /suppliers', async () => {
     const w = await mount()
+    await flushPromises()
+    await w.vm.$nextTick()
+    const select = w.find('select[name="supplier"]')
+    expect(select.exists()).toBe(true)
+    // option « aucun » + les 10 fournisseurs du mock
+    expect(select.findAll('option').length).toBe(11)
+    expect(select.text()).toContain('Mareyeur Sète')
+  })
+
+  it('masque le sélecteur Fournisseur pour une Sortie', async () => {
+    const w = await mount()
+    await flushPromises()
+    await w.vm.$nextTick()
     const segs = w.findAll('[data-field="type"] .seg-btn')
     await segs[1]!.trigger('click')
-    expect(w.find('[data-field="origin"] .field-label').text()).toBe('Destination')
+    await w.vm.$nextTick()
+    expect(w.find('select[name="supplier"]').exists()).toBe(false)
   })
 })
 

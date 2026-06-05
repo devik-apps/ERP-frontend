@@ -242,14 +242,15 @@ export const handlers = [
 
   http.put('https://api.erp.local/v1/stock/:id', async ({ request, params }) => {
     const body = await request.json() as {
-      type: string; productId: string; quantity: number; weightGrams?: number; description?: string
+      type: string; productId: string; quantity: number; weightGrams?: number
+      supplierId?: string | null; description?: string
     }
     return HttpResponse.json(
       {
         id: params['id'],
         type: body.type,
         product: { id: body.productId, label: 'Thon rouge entier' },
-        supplier: null,
+        supplier: body.supplierId ? { id: body.supplierId, name: '' } : null,
         quantity: body.quantity,
         weightGrams: body.weightGrams ?? 0,
         unitPrice: null,
